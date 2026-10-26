@@ -2026,17 +2026,7 @@ function settingsSheet() {
       out.innerHTML = `<div class="note">备份时间：${esc(incoming._at ? jstDate(new Date(incoming._at)) + ' ' + jstTime(new Date(incoming._at)) : '未知')}（日本时间），包含 ${incoming.places.length} 个收藏、${incoming.expenses.length} 笔账。</div>
         <div class="btns"><button class="btn" id="rs-merge">合并到现有资料</button><button class="btn danger" id="rs-replace">用备份替换全部</button></div>
         <p class="small muted" style="margin:0">合并：保留现有资料，加入备份里没有的项目（适合导入行程文件）。替换：现有资料会被备份完全覆盖。</p>`;
-      $('#rs-merge', out).onclick = () => {
-        const pid = new Set(db.places.map(p => p.id)), eid = new Set(db.expenses.map(e => e.id));
-        let a = 0, b = 0;
-        incoming.places.forEach(p => { if (!pid.has(p.id)) { db.places.push(p); a++; } });
-        incoming.expenses.forEach(e => { if (!eid.has(e.id)) { db.expenses.push(e); b++; } });
-        const st = db.settings, ist = incoming.settings;
-        if (!st.rate && ist.rate) { st.rate = ist.rate; st.rateSource = ist.rateSource; st.rateTime = ist.rateTime; }
-        if (!st.tripStart && !st.tripEnd && (ist.tripStart || ist.tripEnd)) { st.tripStart = ist.tripStart; st.tripEnd = ist.tripEnd; }
-        incoming.starts.forEach(s => { if (!db.starts.some(x => x.name === s.name && distM(x, s) < 30)) db.starts.push(s); });
-        save(); api.close(); render(); toast(`已合并：新增 ${a} 个收藏、${b} 笔账`);
-      };
+      $('#rs-merge', out).onclick = () => { const r = mergeIncoming(incoming); api.close(); render(); toast(`已合并：新增 ${r.a} 个收藏、${r.b} 笔账`); };
       $('#rs-replace', out).onclick = async () => {
         if (!(await askConfirm('用备份替换现在的全部资料？现在的收藏和账本会被覆盖。', '替换', true))) return;
         delete incoming._at; db = incoming; save(); api.close(); render(); toast('已从备份恢复');
@@ -2060,6 +2050,49 @@ function settingsSheet() {
       db = freshDB(); save(); ui.dest = null; api.close(); render(); toast('已清除');
     };
   });
+}
+// 合并：只加入现有资料里没有的项目（按 id 判断），不会覆盖或删除
+function mergeIncoming(incoming) {
+  const pid = new Set(db.places.map(p => p.id)), eid = new Set(db.expenses.map(e => e.id));
+  let a = 0, b = 0;
+  incoming.places.forEach(p => { if (!pid.has(p.id)) { db.places.push(p); a++; } });
+  incoming.expenses.forEach(e => { if (!eid.has(e.id)) { db.expenses.push(e); b++; } });
+  const st = db.settings, ist = incoming.settings;
+  if (!st.rate && ist.rate) { st.rate = ist.rate; st.rateSource = ist.rateSource; st.rateTime = ist.rateTime; }
+  if (!st.tripStart && !st.tripEnd && (ist.tripStart || ist.tripEnd)) { st.tripStart = ist.tripStart; st.tripEnd = ist.tripEnd; }
+  incoming.starts.forEach(s => { if (!db.starts.some(x => x.name === s.name && distM(x, s) < 30)) db.starts.push(s); });
+  save();
+  return { a, b };
+}
+// 导入链接：资料压缩后放在网址 # 后面。# 后面的内容不会发送到服务器，也不在代码仓库里。
+async function importFromHash() {
+  const h = location.hash || '';
+  if (!h.startsWith('#import=')) return;
+  const clearHash = () => { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* 忽略 */ } };
+  let incoming;
+  try {
+    const b64 = h.slice(8).replace(/-/g, '+').replace(/_/g, '/');
+    const bin = atob(b64 + '='.repeat((4 - b64.length % 4) % 4));
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    const text = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+    const j = JSON.parse(text); if (j.app !== 'jp-trip-helper' || !j.data) throw new Error('bad');
+    incoming = normalizeDB(j.data);
+  } catch (e) {
+    clearHash();
+    openSheet('导入链接无法读取', '<div class="note warn">这个导入链接不完整或已损坏。请确认复制了完整的链接，或改用「数据与设置 → 从备份文件恢复」。</div>');
+    return;
+  }
+  const newP = incoming.places.filter(p => !db.places.some(x => x.id === p.id)).length;
+  const newE = incoming.expenses.filter(e => !db.expenses.some(x => x.id === e.id)).length;
+  openSheet('导入行程', `<div class="note">这个链接里有 <b>${incoming.places.length}</b> 个地点和 <b>${incoming.expenses.length}</b> 笔账。</div>
+    ${newP || newE ? `<p style="margin:0">将加入 <b>${newP}</b> 个新地点、<b>${newE}</b> 笔新账。你现有的资料不会被删除或覆盖。</p>
+      <button class="btn primary big" id="hi-ok">导入</button>` : '<div class="note ok">这些资料之前已经导入过了，不需要再导入。</div>'}
+    <button class="btn block" id="hi-no">${newP || newE ? '暂时不要' : '关闭'}</button>`, api => {
+    const ok = $('#hi-ok', api.body);
+    if (ok) ok.onclick = () => { const r = mergeIncoming(incoming); api.close(); ui.favTab = 'plan'; setPage('favs'); toast(`已导入：${r.a} 个地点、${r.b} 笔账`); };
+    $('#hi-no', api.body).onclick = () => api.close();
+  });
+  clearHash();
 }
 function addStart(loc) {
   openSheet('存为常用起点', `<label class="f">名称<input class="input" id="as-name" value="${esc(loc.name || '')}" placeholder="例如 新宿的酒店"></label><button class="btn primary big" id="as-ok">保存</button>`, api => {
@@ -2159,6 +2192,8 @@ function boot() {
   setInterval(() => { $$('[data-ago]').forEach(el => { el.textContent = agoText(+el.dataset.ago); }); }, 30000);
 }
 boot();
+importFromHash();
+window.addEventListener("hashchange", importFromHash);
 })();
 </script>
 </body>
