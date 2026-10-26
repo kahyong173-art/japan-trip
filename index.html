@@ -1,0 +1,2165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#23508e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="自由行助手">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2323508e'/%3E%3Ccircle cx='32' cy='27' r='9' fill='none' stroke='white' stroke-width='5'/%3E%3Cpath d='M32 52 19 33h26z' fill='white'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2323508e'/%3E%3Ccircle cx='32' cy='27' r='9' fill='none' stroke='white' stroke-width='5'/%3E%3Cpath d='M32 52 19 33h26z' fill='white'/%3E%3C/svg%3E">
+<title>日本自由行助手</title>
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Leaflet 1.9.4 */
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(images/layers.png);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(images/layers-2x.png);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(images/marker-icon.png);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+/* Layout: one-column phone app — sticky header, scrolling page, fixed bottom tab bar; forms open as bottom sheets. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --ink: #16202b;
+  --muted: #5a6575;
+  --line: #d9dfe7;
+  --accent: #23508e;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4ecf7;
+  --must: #b8382b;
+  --must-soft: #fbe9e6;
+  --warn: #8a5a00;
+  --warn-soft: #fdf2dc;
+  --ok: #24724a;
+  --ok-soft: #e2f3e9;
+  --shadow: 0 1px 2px rgba(20, 32, 50, .06), 0 4px 16px rgba(20, 32, 50, .06);
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Hiragino Sans", "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --font-ja: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "PingFang SC", sans-serif;
+  --radius: 14px;
+  --tabbar-h: 62px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e131a; --surface: #171f29; --surface-2: #1f2934; --ink: #e6ebf1; --muted: #9ba7b6; --line: #2b3644;
+    --accent: #84aae3; --accent-ink: #0e131a; --accent-soft: #1c2a3e; --must: #f08a7d; --must-soft: #3a1f1c;
+    --warn: #e6b45a; --warn-soft: #3a2e17; --ok: #72c597; --ok-soft: #173426;
+    --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e131a; --surface: #171f29; --surface-2: #1f2934; --ink: #e6ebf1; --muted: #9ba7b6; --line: #2b3644;
+  --accent: #84aae3; --accent-ink: #0e131a; --accent-soft: #1c2a3e; --must: #f08a7d; --must-soft: #3a1f1c;
+  --warn: #e6b45a; --warn-soft: #3a2e17; --ok: #72c597; --ok-soft: #173426;
+  --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent); }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.ja { font-family: var(--font-ja); }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 10px; }
+.top-row { display: flex; align-items: center; gap: 10px; max-width: 720px; margin: 0 auto; }
+.top h1 { font-size: 19px; font-weight: 700; flex: 1; min-width: 0; }
+.icon-btn { border: 0; background: var(--surface-2); width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; cursor: pointer; flex: none; }
+.icon-btn svg { width: 22px; height: 22px; }
+
+main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom, 0px)); max-width: 720px; margin: 0 auto; display: grid; gap: 14px; }
+main > * { min-width: 0; }
+
+/* tab bar */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.tabbar-in { display: grid; grid-template-columns: repeat(4, 1fr); max-width: 720px; margin: 0 auto; height: var(--tabbar-h); }
+.tab { border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); font-size: 12.5px; cursor: pointer; }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-current="page"] { color: var(--accent); font-weight: 700; }
+
+/* blocks */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.section-h { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+.section-h h2 { font-size: 17px; }
+.note { font-size: 13.5px; color: var(--muted); background: var(--surface-2); border-radius: 10px; padding: 10px 12px; }
+.note.warn { background: var(--warn-soft); color: var(--warn); }
+.note.ok { background: var(--ok-soft); color: var(--ok); }
+.note.must { background: var(--must-soft); color: var(--must); }
+.note b { color: inherit; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row > .grow { flex: 1; min-width: 0; }
+.stack { display: grid; gap: 8px; }
+.list { display: grid; gap: 10px; }
+.empty { text-align: center; color: var(--muted); padding: 22px 8px; display: grid; gap: 12px; justify-items: center; }
+
+/* buttons */
+.btn { border: 1px solid var(--line); background: var(--surface); min-height: 44px; padding: 8px 14px; border-radius: 12px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: var(--ink); text-align: center; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.soft { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.btn.danger { color: var(--must); border-color: var(--must); background: transparent; }
+.btn.big { min-height: 52px; font-size: 17px; width: 100%; }
+.btn.block { width: 100%; }
+.btn.sm { min-height: 36px; padding: 4px 10px; font-size: 14px; border-radius: 10px; }
+.btn[disabled] { opacity: .5; cursor: default; }
+.btn svg { width: 18px; height: 18px; flex: none; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btns.three { grid-template-columns: repeat(3, 1fr); }
+.btns > .full { grid-column: 1 / -1; }
+
+/* chips */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chips.wrap { flex-wrap: wrap; overflow: visible; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; min-height: 38px; padding: 6px 14px; font-size: 14.5px; cursor: pointer; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--surface-2); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg button { border: 0; background: transparent; min-height: 38px; border-radius: 9px; cursor: pointer; font-size: 14.5px; }
+.seg button[aria-pressed="true"] { background: var(--surface); font-weight: 700; box-shadow: var(--shadow); }
+
+/* badges */
+.badge { display: inline-flex; align-items: center; font-size: 12px; line-height: 1; padding: 4px 7px; border-radius: 6px; background: var(--surface-2); color: var(--muted); white-space: nowrap; font-weight: 600; }
+.badge.must { background: var(--must-soft); color: var(--must); }
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.badge.accent { background: var(--accent-soft); color: var(--accent); }
+.badge.sample { background: transparent; border: 1px dashed var(--muted); }
+.dist { font-weight: 700; font-variant-numeric: tabular-nums; }
+.dist-type { font-size: 12px; color: var(--warn); font-weight: 600; }
+
+/* origin card */
+.origin { display: grid; gap: 8px; }
+.origin-label { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+.origin-meta { font-size: 13px; color: var(--muted); }
+.stale { color: var(--warn); font-weight: 600; }
+
+/* place card */
+.pcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.pcard-top { display: flex; gap: 10px; align-items: flex-start; }
+.pcard-name { font-size: 16.5px; font-weight: 700; overflow-wrap: anywhere; }
+.pcard-dist { margin-left: auto; text-align: right; flex: none; }
+.pcard .meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.pcard .memo { font-size: 14px; color: var(--ink); background: var(--surface-2); border-radius: 8px; padding: 6px 10px; overflow-wrap: anywhere; }
+.pcard.visited { opacity: .72; }
+.pcard .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.prow { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer; text-align: left; width: 100%; }
+.prow .grow { flex: 1; min-width: 0; }
+.prow-main { flex: 1; min-width: 0; display: flex; gap: 10px; align-items: center; border: 0; background: none; padding: 0; text-align: left; cursor: pointer; min-height: 44px; }
+.map-link { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 52px; min-height: 52px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 700; text-decoration: none; }
+.map-link svg { width: 20px; height: 20px; }
+.prow .t { font-weight: 700; overflow-wrap: anywhere; }
+.prow .s { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+
+/* stations */
+.station { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; background: var(--surface); }
+.st-name { font-size: 17px; font-weight: 700; }
+.st-alt { font-size: 13px; color: var(--muted); }
+.lines { display: flex; gap: 6px; flex-wrap: wrap; }
+.line { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; padding: 3px 8px; border-radius: 6px; background: var(--surface-2); }
+.line i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; background: var(--muted); flex: none; }
+
+/* map */
+.map { height: 360px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--surface-2); z-index: 0; }
+.map.small { height: 280px; }
+.pin { width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--accent); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.pin.must { background: #c0392b; }
+.pin.me { background: #1a73e8; border-radius: 50%; transform: none; width: 18px; height: 18px; box-shadow: 0 0 0 6px rgba(26,115,232,.25); }
+.pin.st { background: #2e2e2e; border-radius: 4px; transform: none; width: 16px; height: 16px; }
+
+/* forms */
+label.f { display: grid; gap: 4px; font-size: 14px; color: var(--muted); font-weight: 600; }
+.input, select.input, textarea.input { width: 100%; min-height: 46px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 12px; font-size: 16px; color: var(--ink); }
+textarea.input { min-height: 96px; resize: vertical; }
+.input.amount { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; min-height: 60px; }
+.searchbar { display: flex; gap: 8px; }
+.searchbar .input { flex: 1; min-width: 0; }
+.err { color: var(--must); font-size: 13.5px; }
+
+/* ledger */
+.stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 2px; min-width: 0; }
+.stat .k { font-size: 13px; color: var(--muted); font-weight: 600; }
+.stat .v { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat .v2 { font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+.bar.over > i { background: var(--must); }
+.catrow { display: grid; grid-template-columns: 4.5em 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
+.catrow .amt { font-variant-numeric: tabular-nums; text-align: right; }
+.day-h { font-size: 13px; font-weight: 700; color: var(--muted); display: flex; justify-content: space-between; padding: 4px 2px 0; }
+.exp { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer; width: 100%; text-align: left; }
+.exp .grow { flex: 1; min-width: 0; }
+.exp .t { font-weight: 600; overflow-wrap: anywhere; }
+.exp .s { font-size: 12.5px; color: var(--muted); }
+.exp .a { text-align: right; font-variant-numeric: tabular-nums; flex: none; }
+.exp .a b { display: block; font-size: 16px; }
+.exp.nocount { background: var(--surface-2); }
+.cat-dot { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 13px; font-weight: 800; flex: none; background: var(--accent-soft); color: var(--accent); }
+
+/* sheets */
+.sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+.sheet-bg { position: absolute; inset: 0; background: rgba(8, 12, 18, .45); }
+.sheet { position: relative; background: var(--bg); width: 100%; max-width: 720px; max-height: calc(100% - 24px - env(safe-area-inset-top, 0px)); border-radius: 18px 18px 0 0;
+  display: flex; flex-direction: column; animation: up .2s ease-out; }
+@keyframes up { from { transform: translateY(30px); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+.sheet-h { display: flex; align-items: center; gap: 10px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); background: var(--surface); border-radius: 18px 18px 0 0; }
+.sheet-h h3 { flex: 1; font-size: 17px; min-width: 0; }
+.sheet-b { overflow-y: auto; padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 14px; -webkit-overflow-scrolling: touch; }
+.sheet-b > * { min-width: 0; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom, 0px)); z-index: 80; background: var(--ink); color: var(--bg);
+  padding: 10px 16px; border-radius: 12px; font-size: 14.5px; max-width: calc(100% - 32px); box-shadow: var(--shadow); }
+.banner { background: var(--must-soft); color: var(--must); font-size: 13.5px; padding: 8px 12px; border-radius: 10px; }
+.spinner { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+details.help summary { cursor: pointer; font-weight: 600; color: var(--accent); min-height: 32px; }
+.status-list { display: grid; gap: 6px; font-size: 14px; margin: 0; padding: 0; list-style: none; }
+.status-list li { display: flex; gap: 8px; align-items: flex-start; }
+table.preview { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.preview td, table.preview th { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; vertical-align: top; }
+.scroll-x { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+(function () {
+'use strict';
+
+/* ---------- 基础工具 ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const num = v => { const n = parseFloat(String(v ?? '').replace(/[,，\s¥￥]/g, '')); return Number.isFinite(n) ? n : null; };
+const clone = o => JSON.parse(JSON.stringify(o));
+
+const ICON = {
+  nearby: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/></svg>',
+  go: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M8.5 21l1.5-4M15.5 21 14 17"/><circle cx="9" cy="14" r=".6" fill="currentColor"/><circle cx="15" cy="14" r=".6" fill="currentColor"/></svg>',
+  fav: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',
+  ledger: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  locate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
+};
+
+const PLACE_CATS = ['餐厅', '咖啡厅', '景点', '购物', '住宿', '其他'];
+const PRIORITIES = { must: '必去', want: '想去', pass: '顺路' };
+const EXP_CATS = ['餐饮', '交通', '住宿', '购物', '门票', '其他'];
+const PAYMENTS = ['现金', '信用卡', '交通卡', '电子支付', '其他'];
+const KINDS = { spend: '消费', ictopup: '交通卡充值', exchange: '换汇' };
+
+/* ---------- 日本时间 ---------- */
+const JST_FMT = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+function jstParts(d = new Date()) { const o = {}; JST_FMT.formatToParts(d).forEach(p => { o[p.type] = p.value; }); if (o.hour === '24') o.hour = '00'; return o; }
+const jstNow = () => { const o = jstParts(); return `${o.year}-${o.month}-${o.day}T${o.hour}:${o.minute}`; };
+const jstToday = () => jstNow().slice(0, 10);
+const jstTime = d => { const o = jstParts(d); return `${o.hour}:${o.minute}`; };
+const jstDate = d => { const o = jstParts(d); return `${o.year}-${o.month}-${o.day}`; };
+function agoText(ts) { const m = Math.round((Date.now() - ts) / 60000); if (m < 1) return '刚刚'; if (m < 60) return m + ' 分钟前'; const h = Math.floor(m / 60); return h + ' 小时前'; }
+const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
+function dayLabel(ymd) { const [y, mo, d] = ymd.split('-').map(Number); const w = new Date(Date.UTC(y, mo - 1, d)).getUTCDay(); const t = jstToday(); return `${mo}月${d}日 周${WEEK[w]}${ymd === t ? '（今天）' : ''}`; }
+
+/* ---------- 距离 ---------- */
+function distM(a, b) {
+  const R = 6371000, toR = x => x * Math.PI / 180;
+  const dLat = toR(b.lat - a.lat), dLng = toR(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toR(a.lat)) * Math.cos(toR(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+const fmtDist = m => m < 1000 ? (Math.round(m / 10) * 10) + ' 米' : (m < 10000 ? (m / 1000).toFixed(1) : Math.round(m / 1000)) + ' 公里';
+// 直线距离 → 步行时间的粗略范围（按 80 米/分钟，实际路线通常比直线长 20–40%）
+function walkGuess(m) { if (m > 3000) return ''; const lo = Math.max(1, Math.round(m / 80)); const hi = Math.max(lo + 1, Math.round(m * 1.4 / 80)); return `按直线估算步行约 ${lo}–${hi} 分钟`; }
+const hasXY = p => p && Number.isFinite(p.lat) && Number.isFinite(p.lng);
+const inJapan = p => p.lat > 20 && p.lat < 46.5 && p.lng > 122 && p.lng < 154.5;
+const fmtXY = p => `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`;
+
+/* ---------- 外部地图链接 ---------- */
+function gDir(dest, mode, origin) {
+  const p = new URLSearchParams({ api: '1', travelmode: mode });
+  p.set('destination', hasXY(dest) ? `${dest.lat},${dest.lng}` : [dest.name, dest.address, dest.city].filter(Boolean).join(' '));
+  if (origin && hasXY(origin)) p.set('origin', `${origin.lat},${origin.lng}`);
+  return 'https://www.google.com/maps/dir/?' + p.toString();
+}
+function appleDir(dest, origin) {
+  const p = new URLSearchParams();
+  if (origin && hasXY(origin)) p.set('saddr', `${origin.lat},${origin.lng}`);
+  p.set('daddr', hasXY(dest) ? `${dest.lat},${dest.lng}` : [dest.name, dest.address].filter(Boolean).join(' '));
+  p.set('dirflg', 'r');
+  return 'https://maps.apple.com/?' + p.toString();
+}
+// 在 Google 地图打开某个收藏：优先用保存的链接，其次用确认过的坐标，最后按名称+地址搜索
+function gPlace(p) {
+  if (p.mapUrl && /^https?:\/\//i.test(p.mapUrl)) return p.mapUrl;
+  if (hasXY(p)) return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.lat + ',' + p.lng);
+  return gSearch([p.name, (p.address || '').split(/[（(]/)[0].trim() || p.city].filter(Boolean).join(' '));
+}
+const gSearch = q => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+const gStationsNear = o => `https://www.google.com/maps/search/${encodeURIComponent('駅')}/@${o.lat},${o.lng},16z`;
+
+/* ---------- 解析地图链接 ---------- */
+function parseMapLink(raw) {
+  let s = String(raw || '').trim();
+  if (!s) return { ok: false, msg: '请先粘贴链接或坐标。' };
+  let m = s.match(/^\s*(-?\d{1,2}\.\d+)\s*[,，\s]\s*(-?\d{1,3}\.\d+)\s*$/);
+  if (m) return finish(+m[1], +m[2], '你输入的坐标');
+  if (/maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/kgs|g\.page/i.test(s) && !/[@!]|[?&](q|query|ll)=/.test(s)) {
+    return { ok: false, short: true, msg: '这是 Google 地图的短链接，网页无法自动读取里面的位置。请改用「搜索」「地图选点」，或在 Google 地图里长按地点复制坐标（例如 35.7148, 139.7967）后粘贴。' };
+  }
+  try { s = decodeURIComponent(s.replace(/\+/g, ' ')); } catch (e) { /* 保留原文 */ }
+  let name = '';
+  const nm = s.match(/\/maps\/place\/([^/@?]+)/); if (nm) name = nm[1].trim();
+  m = s.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  if (m) return finish(+m[1], +m[2], '链接中的地点坐标', name);
+  m = s.match(/[?&](?:q|query|ll|destination|daddr|sll|center|coordinate)=(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+  if (m) return finish(+m[1], +m[2], '链接中的坐标', name);
+  m = s.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (m) return finish(+m[1], +m[2], '链接中的地图中心点（可能和地点本身有几十米偏差）', name);
+  return { ok: false, msg: '没能从这个链接识别出位置，可以用搜索、地图选点或手动填写坐标补充。', name };
+  function finish(lat, lng, how, nm2) {
+    const p = { lat, lng };
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return { ok: false, msg: '坐标格式不对，纬度在前、经度在后，例如 35.7148, 139.7967。' };
+    return { ok: true, lat, lng, how, name: nm2 || '', outside: !inJapan(p) };
+  }
+}
+
+/* ---------- 存储 ---------- */
+const KEY = 'jp-trip-helper.v1';
+let storageOK = true;
+let persistAsked = false;
+function freshDB() {
+  return { version: 1, places: [], expenses: [], starts: [],
+    settings: { rate: null, rateSource: '', rateTime: '', budget: null, budgetCurrency: 'JPY', icMode: 'usage', tripStart: '', tripEnd: '' } };
+}
+function normalizeDB(d) {
+  const f = freshDB();
+  if (!d || typeof d !== 'object') return f;
+  return {
+    version: 1,
+    places: Array.isArray(d.places) ? d.places.filter(p => p && p.name) : [],
+    expenses: Array.isArray(d.expenses) ? d.expenses.filter(e => e && Number.isFinite(e.amount)) : [],
+    starts: Array.isArray(d.starts) ? d.starts.filter(s => s && hasXY(s)) : [],
+    settings: Object.assign(f.settings, d.settings || {})
+  };
+}
+function loadDB() {
+  try { const raw = localStorage.getItem(KEY); return raw ? normalizeDB(JSON.parse(raw)) : freshDB(); }
+  catch (e) { storageOK = false; return freshDB(); }
+}
+let db = loadDB();
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(db)); storageOK = true; }
+  catch (e) { storageOK = false; toast('保存失败：这个浏览器不允许保存资料，请先导出备份。'); }
+  if (!persistAsked && navigator.storage && navigator.storage.persist) { persistAsked = true; navigator.storage.persist().catch(() => {}); }
+  renderBanner();
+}
+
+/* ---------- 界面状态（不保存位置轨迹） ---------- */
+const ui = {
+  page: 'nearby',
+  origin: null,            // {lat,lng,label,source:'gps'|'manual',time,acc}
+  locating: false, locError: '',
+  nearFilter: 'all', nearView: 'list', nearLimit: 20,
+  stations: null,          // {forKey, list, time, error, loading}
+  destStations: null,
+  dest: null,              // {name,lat,lng,address,placeId,source}
+  favQuery: '', favCat: '全部', favPri: 'all', favStatus: 'all', favTab: 'all',
+  ledgerDay: null
+};
+try { const t = localStorage.getItem(KEY + '.tab'); if (t) ui.page = t; } catch (e) { /* 忽略 */ }
+const hashTab = (location.hash || '').slice(1);
+if (['nearby', 'go', 'favs', 'ledger'].includes(hashTab)) ui.page = hashTab;
+
+/* ---------- 提示与弹层 ---------- */
+let toastTimer;
+function toast(msg) {
+  let t = $('#toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800);
+}
+const sheets = [];
+function openSheet(title, html, onMount, onClose) {
+  const wrap = document.createElement('div');
+  wrap.className = 'sheet-wrap';
+  wrap.innerHTML = `<div class="sheet-bg"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+    <div class="sheet-h"><h3>${esc(title)}</h3><button class="icon-btn" data-close aria-label="关闭">${ICON.close}</button></div>
+    <div class="sheet-b">${html}</div></div>`;
+  document.body.appendChild(wrap);
+  const api = { el: wrap, body: $('.sheet-b', wrap), close, set: h => { api.body.innerHTML = h; } };
+  function close() { const i = sheets.indexOf(api); if (i >= 0) sheets.splice(i, 1); wrap.remove(); if (onClose) onClose(); document.body.style.overflow = sheets.length ? 'hidden' : ''; }
+  $('.sheet-bg', wrap).addEventListener('click', close);
+  $('[data-close]', wrap).addEventListener('click', close);
+  sheets.push(api);
+  document.body.style.overflow = 'hidden';
+  if (onMount) queueMicrotask(() => onMount(api));
+  return api;
+}
+function askConfirm(text, okLabel = '确定', danger = false) {
+  return new Promise(res => {
+    let done = false;
+    const s = openSheet('请确认', `<p style="margin:0">${text}</p><div class="btns"><button class="btn" data-no>取消</button><button class="btn ${danger ? 'danger' : 'primary'}" data-yes>${esc(okLabel)}</button></div>`,
+      api => {
+        $('[data-no]', api.body).onclick = () => { done = true; res(false); api.close(); };
+        $('[data-yes]', api.body).onclick = () => { done = true; res(true); api.close(); };
+      }, () => { if (!done) res(false); });
+    return s;
+  });
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheets.length) sheets[sheets.length - 1].close(); });
+
+/* ---------- 文件导出 ---------- */
+async function saveFile(name, text, mime) {
+  if (window.claude && typeof window.claude.use === 'function') {
+    try {
+      const d = await window.claude.use('downloads');
+      if (d) { await d.save({ filename: name, data: text }); toast('已保存：' + name); return; }
+    } catch (e) {
+      if (e && e.code === 'declined') { toast('已取消保存'); return; }
+    }
+  }
+  try {
+    const blob = new Blob([text], { type: mime });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; a.rel = 'noopener';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    toast('已开始下载：' + name);
+  } catch (e) {
+    showCopy(name, text);
+  }
+}
+function showCopy(name, text) {
+  openSheet('复制内容', `<p class="note">这个浏览器不能直接下载文件。请复制下面的全部文字，粘贴到备忘录或邮件里保存（文件名：${esc(name)}）。</p>
+    <textarea class="input" id="copy-area" style="min-height:220px" readonly>${esc(text)}</textarea><button class="btn primary" id="copy-btn">复制全部</button>`, api => {
+    $('#copy-btn', api.body).onclick = () => {
+      const ta = $('#copy-area', api.body);
+      const fallback = () => { ta.focus(); ta.select(); toast('已选中全部文字，请手动复制'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast('已复制'), fallback); else fallback();
+    };
+  });
+}
+function readFileText(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result || '')); r.onerror = () => rej(r.error); r.readAsText(file, 'utf-8'); }); }
+
+/* ---------- 网络工具 ---------- */
+async function fetchJSON(url, opts = {}, ms = 20000) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms);
+  try { const r = await fetch(url, Object.assign({ signal: ctl.signal }, opts)); if (!r.ok) throw new Error('HTTP ' + r.status); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+// OpenStreetMap 地点搜索（Nominatim，免费，需用户主动触发）
+let lastGeocode = 0;
+async function geocode(q, near) {
+  const wait = 1100 - (Date.now() - lastGeocode); if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  lastGeocode = Date.now();
+  const p = new URLSearchParams({ format: 'jsonv2', q, countrycodes: 'jp', limit: '10', addressdetails: '0', 'accept-language': 'zh-CN,ja,en' });
+  if (near && hasXY(near)) { const d = 0.25; p.set('viewbox', `${near.lng - d},${near.lat + d},${near.lng + d},${near.lat - d}`); }
+  const data = await fetchJSON('https://nominatim.openstreetmap.org/search?' + p.toString());
+  return (data || []).map(r => ({ name: r.name || String(r.display_name || '').split(',')[0], address: r.display_name, lat: +r.lat, lng: +r.lon, type: r.type, category: r.category }));
+}
+const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
+async function overpass(q) {
+  let lastErr;
+  for (const url of OVERPASS) {
+    try { return await fetchJSON(url, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, 30000); }
+    catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('无法连接');
+}
+function cleanLine(name) { return String(name || '').split(/[:：]/)[0].replace(/\s*[（(][^）)]*[）)]\s*/g, '').replace(/\s+→.*$/, '').trim(); }
+function normName(s) { return String(s || '').toLowerCase().normalize('NFKC').replace(/[\s・·.,，。、\-_'"“”‘’()（）【】\[\]「」]/g, ''); }
+// 附近车站：OpenStreetMap 数据。距离为直线距离。
+async function findStations(c, radius = 1000) {
+  const q = `[out:json][timeout:25];
+nwr(around:${radius},${c.lat},${c.lng})[railway~"^(station|halt)$"];
+out center;
+node(around:${radius + 400},${c.lat},${c.lng})[public_transport=stop_position][~"^(train|subway|light_rail|monorail)$"~"^yes$"]->.sp;
+foreach.sp->.s(
+  .s out;
+  rel(bn.s)[type=route][route~"^(train|subway|light_rail|monorail|tram)$"];
+  out tags;
+);`;
+  const data = await overpass(q);
+  const stations = []; const stops = []; let cur = null;
+  for (const el of data.elements || []) {
+    const t = el.tags || {};
+    if (el.type === 'relation') { if (cur) cur.routes.push(t); continue; }
+    if (t.public_transport === 'stop_position') { cur = { lat: el.lat, lng: el.lon, name: t.name || '', routes: [] }; stops.push(cur); continue; }
+    if (t.railway === 'station' || t.railway === 'halt') {
+      const lat = el.lat ?? (el.center && el.center.lat), lng = el.lon ?? (el.center && el.center.lon);
+      if (!Number.isFinite(lat)) continue;
+      const zh = t['name:zh-Hans'] || t['name:zh-CN'] || t['name:zh'] || '';
+      stations.push({ lat, lng, name: t['name:ja'] || t.name || t['name:en'] || '（未命名车站）', zh, en: t['name:en'] || '', operator: t.operator || t.network || '',
+        kind: t.station === 'subway' ? '地铁' : (t.station === 'light_rail' || t.station === 'monorail' ? '轻轨/单轨' : '铁路'), lines: new Map(), d: distM(c, { lat, lng }) });
+    }
+  }
+  // 合并重复（同名同运营商且很近）
+  const uniq = [];
+  for (const s of stations.sort((a, b) => a.d - b.d)) {
+    if (uniq.some(u => u.name === s.name && u.operator === s.operator && distM(u, s) < 200)) continue;
+    uniq.push(s);
+  }
+  // 把停车位置上的线路归到车站
+  for (const sp of stops) {
+    if (!sp.routes.length) continue;
+    let best = null, bestScore = Infinity;
+    for (const s of uniq) {
+      const d = distM(s, sp); if (d > 500) continue;
+      const nameHit = sp.name && (sp.name.includes(s.name) || s.name.includes(sp.name.replace(/駅$/, '')));
+      const score = nameHit ? d : d + 600;
+      if (score < bestScore && (nameHit || d < 250)) { best = s; bestScore = score; }
+    }
+    if (!best) continue;
+    for (const r of sp.routes) {
+      const ln = cleanLine(r['name:ja'] || r.name || r.ref); if (!ln) continue;
+      if (!best.lines.has(ln)) best.lines.set(ln, { name: ln, colour: r.colour || '' });
+    }
+  }
+  return uniq.slice(0, 10).map(s => Object.assign(s, { lines: Array.from(s.lines.values()) }));
+}
+
+/* ---------- 汇率与账目计算 ---------- */
+function counts(e) {
+  if (e.kind === 'exchange') return false;
+  if (e.kind === 'ictopup') return db.settings.icMode === 'topup';
+  if (e.payment === '交通卡' && db.settings.icMode === 'topup') return false;
+  return true;
+}
+function whyNotCounted(e) {
+  if (e.kind === 'exchange') return '换汇是资金转换，不算消费';
+  if (e.kind === 'ictopup') return '充值不计入，乘车扣款时再计入';
+  if (e.payment === '交通卡' && db.settings.icMode === 'topup') return '已在充值时计入，不重复计算';
+  return '';
+}
+const expCat = e => e.kind === 'ictopup' ? '交通' : (e.category || '其他');
+function toJPY(e) { if (e.currency === 'JPY') return e.amount; if (e.actualMYR != null && e.rate) return e.amount * e.rate; return e.rate ? e.amount * e.rate : null; }
+function toMYR(e) { if (e.actualMYR != null) return e.actualMYR; if (e.currency === 'MYR') return e.amount; return e.rate ? e.amount / e.rate : null; }
+const yen = v => v == null ? '—' : '¥' + Math.round(v).toLocaleString('en-US');
+const rm = v => v == null ? '—' : 'RM ' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtOrig = e => e.currency === 'JPY' ? yen(e.amount) : rm(e.amount);
+function inTrip(e) {
+  const d = (e.datetime || '').slice(0, 10), s = db.settings;
+  if (s.tripStart && d < s.tripStart) return false;
+  if (s.tripEnd && d > s.tripEnd) return false;
+  return true;
+}
+function sumUp(list) {
+  let jpy = 0, myr = 0, missing = 0, n = 0; const byCat = {};
+  for (const e of list) {
+    if (!counts(e)) continue;
+    n++;
+    const j = toJPY(e), m = toMYR(e);
+    if (j != null) jpy += j; else missing++;
+    if (m != null) myr += m; else missing++;
+    const c = expCat(e); byCat[c] = byCat[c] || { jpy: 0, myr: 0 };
+    if (j != null) byCat[c].jpy += j; if (m != null) byCat[c].myr += m;
+  }
+  return { jpy, myr, missing, n, byCat };
+}
+
+/* ---------- 横幅 ---------- */
+function renderBanner() {
+  const b = $('#banner'); if (!b) return;
+  if (!storageOK) { b.hidden = false; b.textContent = '注意：这个浏览器现在无法保存资料（可能是无痕模式或预览环境）。关闭页面后，新记录可能会丢失，请在「数据与设置」导出备份。'; }
+  else b.hidden = true;
+}
+
+/* ---------- 起点 ---------- */
+function getGPS() {
+  if (!('geolocation' in navigator)) { ui.locError = '这个浏览器不支持定位。请用「手动设置起点」。'; render(); return; }
+  if (!window.isSecureContext) { ui.locError = '网页没有使用 https 安全连接，浏览器不允许定位。请用「手动设置起点」。'; render(); return; }
+  ui.locating = true; ui.locError = ''; render();
+  navigator.geolocation.getCurrentPosition(pos => {
+    ui.locating = false;
+    ui.origin = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy, label: '我的当前位置', source: 'gps', time: Date.now() };
+    ui.stations = null; render(); loadStations();
+  }, err => {
+    ui.locating = false;
+    ui.locError = err.code === 1 ? '你没有允许定位（或在预览环境中定位被禁止）。没关系，可以手动设置起点，例如酒店。'
+      : err.code === 3 ? '定位超时，可能信号不好。可以再试一次，或手动设置起点。' : '暂时无法取得位置。可以再试一次，或手动设置起点。';
+    render();
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+}
+async function chooseManualOrigin() {
+  const loc = await pickLocation({ title: '设置起点', modes: ['starts', 'search', 'link', 'map', 'fav'], near: ui.origin });
+  if (!loc) return;
+  ui.locError = '';
+  ui.origin = { lat: loc.lat, lng: loc.lng, label: loc.name || '手动选择的位置', address: loc.address || '', source: 'manual', time: Date.now(), fromStart: loc.fromStart };
+  ui.stations = null; render(); loadStations();
+}
+function originKey(o) { return o ? o.lat.toFixed(4) + ',' + o.lng.toFixed(4) : ''; }
+async function loadStations(force) {
+  const o = ui.origin; if (!o) return;
+  const k = originKey(o);
+  if (!force && ui.stations && ui.stations.forKey === k && !ui.stations.error) return;
+  ui.stations = { forKey: k, loading: true }; renderIf('nearby');
+  try { const list = await findStations(o); ui.stations = { forKey: k, list, time: Date.now() }; }
+  catch (e) { ui.stations = { forKey: k, error: '车站数据服务暂时连不上（可能没有网络，或在预览环境中被限制）。可以先用 Google 地图查看附近车站。' }; }
+  renderIf('nearby');
+}
+function originCard(compact) {
+  const o = ui.origin;
+  if (!o) {
+    return `<section class="card origin">
+      <div class="section-h"><h2>你现在在哪里？</h2></div>
+      ${ui.locError ? `<div class="note warn">${esc(ui.locError)}</div>` : '<p class="muted small" style="margin:0">只在你点按钮时定位一次，不会在后台追踪，也不保存位置记录。</p>'}
+      <button class="btn primary big" data-act="gps" ${ui.locating ? 'disabled' : ''}>${ui.locating ? '<span class="spinner"></span> 正在定位…' : ICON.locate + ' 获取我的位置'}</button>
+      <button class="btn block" data-act="manual-origin">手动设置起点（酒店、地址、车站、地图选点）</button>
+    </section>`;
+  }
+  const mins = (Date.now() - o.time) / 60000;
+  const stale = o.source === 'gps' && mins > 10;
+  return `<section class="card origin">
+    <div class="row"><span class="badge ${o.source === 'gps' ? 'accent' : ''}">${o.source === 'gps' ? '定位' : '手动起点'}</span>
+      <span class="origin-meta">日本时间 ${jstTime(new Date(o.time))} 更新 · <span data-ago="${o.time}">${agoText(o.time)}</span>${o.acc ? ` · 精度约 ±${Math.round(o.acc)} 米` : ''}</span></div>
+    <div class="origin-label">${esc(o.label)}</div>
+    ${o.address ? `<div class="origin-meta">${esc(o.address)}</div>` : ''}
+    ${stale ? '<div class="stale small">位置可能已经过时，走动后请刷新。</div>' : ''}
+    ${ui.locError && o.source !== 'gps' ? `<div class="note warn small">${esc(ui.locError)}</div>` : ''}
+    ${compact ? '' : `<div class="btns">
+      <button class="btn soft" data-act="gps" ${ui.locating ? 'disabled' : ''}>${ui.locating ? '<span class="spinner"></span> 定位中' : '刷新我的位置'}</button>
+      <button class="btn" data-act="manual-origin">换一个起点</button>
+      ${o.source === 'manual' && !o.fromStart ? '<button class="btn sm full" data-act="save-start">把这里存为常用起点（如酒店）</button>' : ''}
+    </div>`}
+  </section>`;
+}
+
+/* ---------- 地点选择器（搜索 / 收藏 / 常用起点 / 链接 / 地图） ---------- */
+const MODE_NAMES = { search: '搜索', fav: '我的收藏', starts: '常用起点', link: '链接或坐标', map: '地图选点' };
+function pickLocation(opts) {
+  return new Promise(resolve => {
+    let resolved = false;
+    let mode = opts.modes[0];
+    if (mode === 'starts' && !db.starts.length) mode = opts.modes[1] || 'search';
+    let mapObj = null, marker = null, picked = null, results = null, searching = false, searchErr = '', linkRes = null;
+    const s = openSheet(opts.title || '选择地点', '', api => { draw(); }, () => { if (mapObj) mapObj.remove(); if (!resolved) resolve(null); });
+    function done(loc) { resolved = true; resolve(loc); s.close(); }
+    function draw() {
+      const tabs = `<div class="chips">${opts.modes.map(m => `<button class="chip" data-mode="${m}" aria-pressed="${m === mode}">${MODE_NAMES[m]}</button>`).join('')}</div>`;
+      let body = '';
+      if (mode === 'search') {
+        body = `<div class="searchbar"><input class="input" id="pk-q" placeholder="地点名称、地址或车站" value="${esc(opts.query || '')}" enterkeyhint="search"><button class="btn primary" id="pk-go">搜索</button></div>
+          <p class="muted small" style="margin:0">搜索使用 OpenStreetMap 免费数据。同名或多家分店会全部列出，请点选正确的一个。小店可能搜不到，可改用 Google 地图链接或地图选点。</p>
+          ${searching ? '<div class="empty"><span class="spinner"></span>正在搜索…</div>' : ''}
+          ${searchErr ? `<div class="note warn">${esc(searchErr)}</div>` : ''}
+          ${results ? (results.length ? `<div class="stack">${results.map((r, i) => `<button class="prow" data-pick="${i}"><div class="grow"><div class="t">${esc(r.name)}</div><div class="s">${esc(r.address)}</div>
+            ${opts.near && hasXY(opts.near) ? `<div class="s">距起点 直线 ${fmtDist(distM(opts.near, r))}</div>` : ''}</div></button>`).join('')}</div>`
+            : `<div class="note">没有找到结果。可以换个写法（日文名称通常更准），或 <a href="${gSearch(opts.query || '')}" target="_blank" rel="noopener">在 Google 地图搜索</a> 后复制链接回来粘贴。</div>`) : ''}`;
+      } else if (mode === 'fav') {
+        const list = db.places.filter(hasXY);
+        body = list.length ? `<input class="input" id="pk-fq" placeholder="筛选收藏" value=""><div class="stack" id="pk-flist">${favPickList(list, '')}</div>`
+          : '<div class="note">收藏里还没有带坐标的地点。</div>';
+      } else if (mode === 'starts') {
+        body = db.starts.length ? `<div class="stack">${db.starts.map((st, i) => `<button class="prow" data-start="${i}"><div class="grow"><div class="t">${esc(st.name)}</div>${st.address ? `<div class="s">${esc(st.address)}</div>` : ''}</div></button>`).join('')}</div>`
+          : '<div class="note">还没有常用起点。设置好起点后，可以把酒店等地方存为常用起点，下次一点就用。</div>';
+      } else if (mode === 'link') {
+        body = `<textarea class="input" id="pk-link" placeholder="粘贴 Google 地图链接，或坐标，例如 35.7148, 139.7967"></textarea>
+          <button class="btn primary" id="pk-parse">识别位置</button>
+          ${linkRes ? (linkRes.ok ? `<div class="note ok">已识别：${fmtXY(linkRes)}（来源：${esc(linkRes.how)}）${linkRes.outside ? '<br><b>注意：这个位置不在日本，请检查。</b>' : ''}</div>
+              <label class="f">地点名称<input class="input" id="pk-lname" value="${esc(linkRes.name || '')}" placeholder="例如 酒店名称"></label>
+              <button class="btn primary big" id="pk-use-link">使用这个位置</button>` : `<div class="note warn">${esc(linkRes.msg)}</div>`) : ''}
+          <details class="help"><summary>怎样在 Google 地图拿到坐标？</summary><p class="small muted">在 Google 地图 App 里长按地图上的地点，会出现一个红色图钉，上方搜索框会显示类似「35.71480, 139.79670」的数字。复制它并粘贴到这里即可。用电脑浏览器打开 Google 地图时，地址栏里的长链接也可以直接粘贴。</p></details>`;
+      } else if (mode === 'map') {
+        body = `<p class="muted small" style="margin:0">在地图上点一下选择位置，可以拖动和放大。</p><div class="map small" id="pk-map"></div>
+          <div id="pk-map-note"></div>
+          ${picked ? `<div class="note ok">已选：${fmtXY(picked)}</div><label class="f">地点名称<input class="input" id="pk-mname" placeholder="例如 酒店名称"></label><button class="btn primary big" id="pk-use-map">使用这个位置</button>` : ''}`;
+      }
+      s.set(tabs + body);
+      $$('[data-mode]', s.body).forEach(b => b.onclick = () => { if (mapObj) { mapObj.remove(); mapObj = null; marker = null; } mode = b.dataset.mode; draw(); });
+      if (mode === 'search') {
+        const q = $('#pk-q', s.body);
+        const go = async () => {
+          const v = q.value.trim(); if (!v) return; opts.query = v; searching = true; searchErr = ''; results = null; draw();
+          try { results = await geocode(v, opts.near); } catch (e) { searchErr = '搜索服务暂时连不上（可能没有网络，或在预览环境中被限制）。请改用链接或地图选点。'; }
+          searching = false; if (s.el.isConnected) draw();
+        };
+        $('#pk-go', s.body).onclick = go; q.onkeydown = e => { if (e.key === 'Enter') go(); };
+        $$('[data-pick]', s.body).forEach(b => b.onclick = () => { const r = results[+b.dataset.pick]; done({ lat: r.lat, lng: r.lng, name: r.name, address: r.address, source: 'OpenStreetMap 搜索' }); });
+        if (!results && !searching) setTimeout(() => q.focus(), 50);
+      }
+      if (mode === 'fav') {
+        const fq = $('#pk-fq', s.body);
+        const bind = () => $$('[data-fpick]', s.body).forEach(b => b.onclick = () => { const p = db.places.find(x => x.id === b.dataset.fpick); done({ lat: p.lat, lng: p.lng, name: p.name, address: p.address, placeId: p.id, source: '收藏' }); });
+        if (fq) fq.oninput = () => { $('#pk-flist', s.body).innerHTML = favPickList(db.places.filter(hasXY), fq.value); bind(); };
+        bind();
+      }
+      if (mode === 'starts') $$('[data-start]', s.body).forEach(b => b.onclick = () => { const st = db.starts[+b.dataset.start]; done({ lat: st.lat, lng: st.lng, name: st.name, address: st.address, source: '常用起点', fromStart: true }); });
+      if (mode === 'link') {
+        const ta = $('#pk-link', s.body); if (opts._link) ta.value = opts._link;
+        $('#pk-parse', s.body).onclick = () => { opts._link = ta.value; linkRes = parseMapLink(ta.value); draw(); };
+        const use = $('#pk-use-link', s.body);
+        if (use) use.onclick = () => done({ lat: linkRes.lat, lng: linkRes.lng, name: $('#pk-lname', s.body).value.trim(), source: linkRes.how, mapUrl: /^https?:/i.test(opts._link || '') ? opts._link.trim() : '' });
+      }
+      if (mode === 'map') {
+        const center = picked || (opts.near && hasXY(opts.near) ? opts.near : { lat: 35.681, lng: 139.767 });
+        mapObj = makeMap($('#pk-map', s.body), center, picked ? 17 : 14, $('#pk-map-note', s.body));
+        if (mapObj) {
+          if (picked) marker = L.marker([picked.lat, picked.lng], { icon: pinIcon('') }).addTo(mapObj);
+          mapObj.on('click', ev => { picked = { lat: ev.latlng.lat, lng: ev.latlng.lng }; mapObj.remove(); mapObj = null; draw(); });
+        }
+        const use = $('#pk-use-map', s.body);
+        if (use) use.onclick = () => done({ lat: picked.lat, lng: picked.lng, name: $('#pk-mname', s.body).value.trim(), source: '地图选点' });
+      }
+    }
+  });
+}
+function favPickList(list, q) {
+  const nq = normName(q);
+  const items = list.filter(p => !nq || normName(p.name + p.city + p.address + p.note).includes(nq)).slice(0, 60);
+  if (!items.length) return '<div class="muted small">没有符合的收藏。</div>';
+  return items.map(p => `<button class="prow" data-fpick="${p.id}"><div class="grow"><div class="t">${esc(p.name)}</div><div class="s">${esc(p.category)}${p.city ? ' · ' + esc(p.city) : ''}${ui.origin ? ' · 直线 ' + fmtDist(distM(ui.origin, p)) : ''}</div></div></button>`).join('');
+}
+
+/* ---------- 地图 ---------- */
+function pinIcon(cls) { return L.divIcon({ className: '', html: `<div class="pin ${cls}"></div>`, iconSize: [26, 26], iconAnchor: [13, 26] }); }
+function makeMap(el, center, zoom, noteEl) {
+  if (!window.L) { el.innerHTML = '<div class="empty">地图组件没有加载成功，请检查网络后重新打开页面。</div>'; return null; }
+  const m = L.map(el, { zoomControl: true, attributionControl: true }).setView([center.lat, center.lng], zoom);
+  let warned = false;
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' })
+    .on('tileerror', () => { if (!warned && noteEl) { warned = true; noteEl.innerHTML = '<div class="note warn small">地图底图加载失败（没有网络，或预览环境不允许）。点选位置仍然有效，但看不到街道。</div>'; } })
+    .addTo(m);
+  setTimeout(() => m.invalidateSize(), 60);
+  return m;
+}
+
+/* ---------- 页面：附近 ---------- */
+const NEAR_FILTERS = [['all', '全部'], ['today', '今天计划'], ['eat', '想吃的'], ['shop', '想逛的'], ['must', '必去'], ['unvisited', '未去过']];
+function nearFilterFn(f) {
+  return p => f === 'all' ? true : f === 'today' ? p.plan === jstToday() : f === 'eat' ? (p.category === '餐厅' || p.category === '咖啡厅')
+    : f === 'shop' ? (p.category === '景点' || p.category === '购物') : f === 'must' ? p.priority === 'must' : f === 'unvisited' ? !p.visited : true;
+}
+let nearMap = null;
+function renderNearby() {
+  const o = ui.origin;
+  let html = originCard(false);
+  if (o) {
+    // 车站
+    const st = ui.stations;
+    let sh = '';
+    if (!st || st.loading) sh = '<div class="empty"><span class="spinner"></span>正在查找附近车站…</div>';
+    else if (st.error) sh = `<div class="note warn">${esc(st.error)}</div><div class="btns"><button class="btn" data-act="reload-stations">再试一次</button><a class="btn" href="${gStationsNear(o)}" target="_blank" rel="noopener">${ICON.ext} Google 地图看车站</a></div>`;
+    else if (!st.list.length) sh = `<div class="note">1 公里内没有找到车站。</div><a class="btn" href="${gStationsNear(o)}" target="_blank" rel="noopener">${ICON.ext} 在 Google 地图查看附近车站</a>`;
+    else sh = `<div class="list">${st.list.map(stationCard).join('')}</div>
+      <p class="muted small" style="margin:0">车站资料来自 OpenStreetMap（${jstTime(new Date(st.time))} 查询），线路可能不完整，请以现场指示牌为准。</p>`;
+    html += `<section class="card">
+      <div class="section-h"><h2>附近车站</h2><span class="dist-type">按直线距离排列</span></div>
+      <div class="note">这里是<b>地理位置最近</b>的车站，不一定是去目的地<b>最合适的上车站</b>。要去某个地方时，请在「去哪里」打开路线，地图会综合步行、换乘和总时间推荐上车站。</div>
+      ${sh}</section>`;
+  }
+  // 附近收藏
+  const withXY = db.places.filter(hasXY);
+  const pending = db.places.filter(p => !hasXY(p)).length;
+  let list = withXY.filter(nearFilterFn(ui.nearFilter));
+  if (o) list = list.map(p => Object.assign({}, p, { _d: distM(o, p) })).sort((a, b) => a._d - b._d);
+  html += `<section class="card">
+    <div class="section-h"><h2>附近的收藏</h2>${o ? '<span class="dist-type">直线距离，由近到远</span>' : ''}</div>
+    <div class="chips">${NEAR_FILTERS.map(([k, n]) => `<button class="chip" data-act="near-filter" data-v="${k}" aria-pressed="${ui.nearFilter === k}">${n}</button>`).join('')}</div>
+    ${o ? `<div class="seg"><button data-act="near-view" data-v="list" aria-pressed="${ui.nearView === 'list'}">列表</button><button data-act="near-view" data-v="map" aria-pressed="${ui.nearView === 'map'}">地图</button></div>` : ''}
+    ${!o ? '<div class="note">设置位置或起点后，这里会按距离列出你收藏的地点。</div>' : ''}
+    ${pending ? `<div class="note warn">${pending} 个收藏还没有确认位置，暂时不能算距离。<button class="btn sm" data-act="goto-pending" style="margin-left:6px">去确认</button></div>` : ''}
+    ${!db.places.length ? `<div class="empty">还没有收藏地点。<button class="btn primary" data-act="tab" data-v="favs">去添加收藏</button></div>` : ''}
+    ${o && ui.nearView === 'map' ? '<div class="map" id="near-map"></div><div id="near-map-note"></div>' : ''}
+    ${o && ui.nearView === 'list' ? (list.length ? `<div class="list">${list.slice(0, ui.nearLimit).map(placeCard).join('')}</div>
+      ${list.length > ui.nearLimit ? `<button class="btn block" data-act="near-more">显示更多（还有 ${list.length - ui.nearLimit} 个）</button>` : ''}`
+      : (db.places.length ? '<div class="muted small">这个筛选下没有地点。</div>' : '')) : ''}
+  </section>`;
+  $('#page').innerHTML = html;
+  if (o && ui.nearView === 'map') {
+    if (nearMap) { nearMap.remove(); nearMap = null; }
+    nearMap = makeMap($('#near-map'), o, 15, $('#near-map-note'));
+    if (nearMap) {
+      L.marker([o.lat, o.lng], { icon: L.divIcon({ className: '', html: '<div class="pin me"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }) }).addTo(nearMap).bindPopup('起点：' + esc(o.label));
+      const pts = [[o.lat, o.lng]];
+      list.slice(0, 60).forEach(p => {
+        pts.push([p.lat, p.lng]);
+        L.marker([p.lat, p.lng], { icon: pinIcon(p.priority === 'must' ? 'must' : '') }).addTo(nearMap)
+          .bindPopup(`<b>${esc(p.name)}</b><br>${esc(p.category)} · 直线 ${fmtDist(p._d)}<br><a href="#" data-act="go-place" data-id="${p.id}">带我去</a>`);
+      });
+      if (ui.stations && ui.stations.list) ui.stations.list.forEach(s => L.marker([s.lat, s.lng], { icon: L.divIcon({ className: '', html: '<div class="pin st"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(nearMap).bindPopup(esc(s.name)));
+      if (pts.length > 1) nearMap.fitBounds(pts.slice(0, 12), { padding: [30, 30], maxZoom: 16 });
+    }
+  }
+}
+function stationCard(s) {
+  const alt = [s.zh && s.zh !== s.name ? '中文：' + s.zh : '', s.en ? s.en : ''].filter(Boolean).join(' · ');
+  return `<div class="station">
+    <div class="row"><div class="grow"><div class="st-name ja">${esc(s.name)}</div>${alt ? `<div class="st-alt">${esc(alt)}</div>` : ''}</div>
+      <div style="text-align:right"><div class="dist">${fmtDist(s.d)}</div><div class="dist-type">直线距离</div></div></div>
+    <div class="row small muted"><span class="badge">${esc(s.kind)}</span>${s.operator ? `<span>${esc(s.operator)}</span>` : ''}<span>${esc(walkGuess(s.d))}</span></div>
+    ${s.lines.length ? `<div class="lines">${s.lines.slice(0, 10).map(l => `<span class="line ja"><i style="${lineColor(l.colour)}"></i>${esc(l.name)}</span>`).join('')}</div>` : '<div class="muted small">线路资料暂缺</div>'}
+    <a class="btn soft" href="${gDir({ lat: s.lat, lng: s.lng }, 'walking', ui.origin)}" target="_blank" rel="noopener">${ICON.ext} 步行到这个车站</a>
+  </div>`;
+}
+function planLabel(ymd) { if (!ymd) return ''; const [y, mo, d] = ymd.split('-').map(Number); const w = new Date(Date.UTC(y, mo - 1, d)).getUTCDay(); return `计划 ${mo}/${d}（${WEEK[w]}）`; }
+function lineColor(c) { return /^#?[0-9a-f]{3,8}$/i.test(c || '') || /^[a-z]+$/i.test(c || '') ? 'background:' + c : ''; }
+function hoursLine(p) {
+  return p.hours ? `<span class="badge warn">营业时间待确认</span><span class="small muted">你记录的：${esc(p.hours)}</span>` : '<span class="badge warn">营业时间待确认</span>';
+}
+function placeCard(p) {
+  const d = p._d;
+  return `<article class="pcard ${p.visited ? 'visited' : ''}">
+    <div class="pcard-top"><div style="min-width:0"><div class="pcard-name">${esc(p.name)}</div>
+      <div class="meta small"><span class="badge">${esc(p.category)}</span><span class="badge ${p.priority === 'must' ? 'must' : ''}">${PRIORITIES[p.priority] || '想去'}</span>${p.visited ? '<span class="badge ok">已去</span>' : ''}${p.plan ? `<span class="badge accent">${planLabel(p.plan)}</span>` : ''}${p.sample ? '<span class="badge sample">示例</span>' : ''}${p.city ? `<span class="muted">${esc(p.city)}</span>` : ''}</div></div>
+      ${d != null ? `<div class="pcard-dist"><div class="dist">${fmtDist(d)}</div><div class="dist-type">直线距离</div></div>` : ''}</div>
+    ${d != null && walkGuess(d) ? `<div class="small muted">${walkGuess(d)}；实际步行或坐车时间请点「带我去」查看</div>` : ''}
+    ${p.note ? `<div class="memo">${esc(p.note)}</div>` : ''}
+    <div class="meta">${hoursLine(p)}${p.cost ? `<span class="small muted">人均约 ¥${Math.round(p.cost).toLocaleString('en-US')}</span>` : ''}</div>
+    <div class="acts"><button class="btn primary" data-act="go-place" data-id="${p.id}">带我去</button>
+      <button class="btn" data-act="toggle-visited" data-id="${p.id}">${p.visited ? '改回未去' : '标记已去'}</button>
+      <a class="btn soft" style="grid-column:1/-1" href="${esc(gPlace(p))}" target="_blank" rel="noopener">${ICON.ext} 在 Google 地图打开</a></div>
+  </article>`;
+}
+
+/* ---------- 页面：去哪里 ---------- */
+function renderGo() {
+  const o = ui.origin, d = ui.dest;
+  let html = '';
+  html += `<section class="card"><div class="section-h"><h2>起点</h2></div>
+    ${o ? `<div class="row"><div class="grow"><div style="font-weight:700">${esc(o.label)}</div><div class="origin-meta">${o.source === 'gps' ? '定位' : '手动起点'} · <span data-ago="${o.time}">${agoText(o.time)}</span></div></div><button class="btn sm" data-act="manual-origin">更换</button></div>`
+      : `<div class="note">还没有起点。不设起点也可以，地图 App 会用你手机当时的位置。</div><div class="btns"><button class="btn soft" data-act="gps">${ICON.locate} 定位</button><button class="btn" data-act="manual-origin">手动设置</button></div>`}
+    ${ui.locError && !o ? `<div class="note warn small">${esc(ui.locError)}</div>` : ''}
+  </section>`;
+  html += `<section class="card"><div class="section-h"><h2>目的地</h2>${d ? '<button class="btn sm" data-act="clear-dest">重新选择</button>' : ''}</div>`;
+  if (!d) {
+    html += `<div class="searchbar"><input class="input" id="go-q" placeholder="景点、餐厅、车站或地址" enterkeyhint="search"><button class="btn primary" data-act="go-search">搜索</button></div>
+      <div class="btns"><button class="btn" data-act="go-pick" data-v="fav">从收藏选择</button><button class="btn" data-act="go-pick" data-v="link">粘贴链接/坐标</button><button class="btn full" data-act="go-pick" data-v="map">在地图上选</button></div>`;
+  } else {
+    const dd = o && hasXY(d) ? distM(o, d) : null;
+    html += `<div><div style="font-size:18px;font-weight:800">${esc(d.name || '选定的位置')}</div>
+      ${d.address ? `<div class="small muted">${esc(d.address)}</div>` : ''}
+      <div class="small muted">${hasXY(d) ? '坐标 ' + fmtXY(d) : '没有坐标，将按名称搜索'}${d.source ? ' · 来源：' + esc(d.source) : ''}</div>
+      ${dd != null ? `<div style="margin-top:4px"><span class="dist">${fmtDist(dd)}</span> <span class="dist-type">直线距离</span></div>` : ''}</div>
+      ${!hasXY(d) ? '<div class="note warn">这个地点没有确认坐标，地图会按名称搜索，可能找到别的分店。请在地图 App 里核对地址。</div>' : ''}
+      <div class="note"><b>应用内乘车路线：尚未提供。</b>第一阶段还没有接入可靠的交通数据，所以这里不显示乘车步骤、时刻、票价或出口，避免出现不准确的信息。请点下面的按钮，在地图 App 中查看实时路线；它会告诉你从哪个车站上车（不一定是最近的那个）、坐哪条线、往哪个方向、在哪里换乘。</div>
+      <a class="btn primary big" href="${gDir(d, 'transit', o)}" target="_blank" rel="noopener">${ICON.ext} Google 地图：公共交通路线</a>
+      <div class="btns"><a class="btn" href="${gDir(d, 'walking', o)}" target="_blank" rel="noopener">Google 步行路线</a><a class="btn" href="${appleDir(d, o)}" target="_blank" rel="noopener">Apple 地图</a>
+      ${d.mapUrl ? `<a class="btn full" href="${esc(d.mapUrl)}" target="_blank" rel="noopener">打开收藏时保存的地图链接</a>` : ''}</div>
+      ${o ? '' : '<p class="small muted" style="margin:0">没有设置起点，地图 App 会自动用你手机的当前位置作为起点。</p>'}`;
+    if (hasXY(d)) {
+      const ds = ui.destStations;
+      html += `<div class="section-h" style="margin-top:6px"><h2 style="font-size:15px">目的地附近车站</h2><span class="dist-type">直线距离</span></div>`;
+      if (!ds) html += '<button class="btn block" data-act="dest-stations">查看目的地附近有哪些车站</button>';
+      else if (ds.loading) html += '<div class="empty"><span class="spinner"></span>正在查找…</div>';
+      else if (ds.error) html += `<div class="note warn">${esc(ds.error)}</div>`;
+      else if (!ds.list.length) html += '<div class="note">1 公里内没有找到车站。</div>';
+      else html += `<div class="list">${ds.list.slice(0, 4).map(s => `<div class="station"><div class="row"><div class="grow"><div class="st-name ja">${esc(s.name)}</div>${s.zh && s.zh !== s.name ? `<div class="st-alt">中文：${esc(s.zh)}</div>` : ''}</div><div style="text-align:right"><div class="dist">${fmtDist(distM(d, s))}</div><div class="dist-type">离目的地 直线</div></div></div>
+          ${s.lines.length ? `<div class="lines">${s.lines.slice(0, 8).map(l => `<span class="line ja"><i style="${lineColor(l.colour)}"></i>${esc(l.name)}</span>`).join('')}</div>` : ''}</div>`).join('')}</div>
+          <p class="muted small" style="margin:0">资料来自 OpenStreetMap，仅供参考下车站，实际路线以地图 App 为准。</p>`;
+    }
+    if (!d.placeId) html += '<button class="btn block" data-act="dest-to-fav">把这个地点加入收藏</button>';
+    else { const p = db.places.find(x => x.id === d.placeId); if (p && !p.visited) html += `<button class="btn block" data-act="toggle-visited" data-id="${p.id}">到过了，标记已去</button>`; }
+  }
+  html += '</section>';
+  $('#page').innerHTML = html;
+  const q = $('#go-q');
+  if (q) q.onkeydown = e => { if (e.key === 'Enter') goSearch(); };
+}
+async function goSearch(mode) {
+  const q = $('#go-q');
+  const loc = await pickLocation({ title: '选择目的地', modes: mode ? [mode, 'search', 'fav', 'link', 'map'].filter((v, i, a) => a.indexOf(v) === i) : ['search', 'fav', 'link', 'map'], query: q ? q.value.trim() : '', near: ui.origin });
+  if (!loc) return;
+  setDest(loc);
+}
+function setDest(loc) { ui.dest = loc; ui.destStations = null; setPage('go'); }
+async function loadDestStations() {
+  const d = ui.dest; ui.destStations = { loading: true }; renderIf('go');
+  try { ui.destStations = { list: await findStations(d) }; } catch (e) { ui.destStations = { error: '车站数据服务暂时连不上（可能没有网络，或在预览环境中被限制）。' }; }
+  renderIf('go');
+}
+
+/* ---------- 页面：我的收藏 ---------- */
+function favMatches(p) {
+  const nq = normName(ui.favQuery);
+  if (nq && !normName([p.name, p.city, p.address, p.note].join(' ')).includes(nq)) return false;
+  if (ui.favCat !== '全部' && p.category !== ui.favCat) return false;
+  if (ui.favPri !== 'all' && p.priority !== ui.favPri) return false;
+  if (ui.favStatus === 'visited' && !p.visited) return false;
+  if (ui.favStatus === 'unvisited' && p.visited) return false;
+  if (ui.favTab === 'pending' && hasXY(p)) return false;
+  return true;
+}
+function renderFavs() {
+  const pending = db.places.filter(p => !hasXY(p)).length;
+  if (!pending && ui.favTab === 'pending') ui.favTab = 'all';
+  const list = db.places.filter(favMatches).sort((a, b) => (a.visited - b.visited) || ((b.priority === 'must') - (a.priority === 'must')) || (b.createdAt || 0) - (a.createdAt || 0));
+  let html = `<section class="stack">
+    <div class="btns three"><button class="btn primary" data-act="place-new">${ICON.plus} 新增</button><button class="btn" data-act="batch-add">批量粘贴</button><button class="btn" data-act="csv-import">导入 CSV</button></div>
+    ${db.places.length ? `<div class="seg"><button data-act="fav-tab" data-v="all" aria-pressed="${ui.favTab === 'all'}">全部（${db.places.length}）</button><button data-act="fav-tab" data-v="plan" aria-pressed="${ui.favTab === 'plan'}">按日期</button><button data-act="fav-tab" data-v="pending" aria-pressed="${ui.favTab === 'pending'}">待确认（${pending}）</button></div>` : ''}
+  </section>`;
+  if (!db.places.length) {
+    html += `<section class="card empty"><div><b>先把想去的地方都存进来</b><br>不用安排哪天去。到了日本，打开「附近」就能按距离挑。</div>
+      <button class="btn primary" data-act="place-new">新增第一个地点</button><button class="btn" data-act="load-sample">载入示例数据看看效果</button></section>`;
+    $('#page').innerHTML = html; return;
+  }
+  if (ui.favTab === 'pending') html += '<div class="note warn">这些地点还没有确认位置或分店，暂时不能算距离。点开每一个，用搜索、地图链接或地图选点补上位置。</div>';
+  html += `<section class="stack">
+    <input class="input" id="fav-q" type="search" placeholder="搜索名称、城市、备注" value="${esc(ui.favQuery)}">
+    <div class="chips">${['全部', ...PLACE_CATS].map(c => `<button class="chip" data-act="fav-cat" data-v="${c}" aria-pressed="${ui.favCat === c}">${c}</button>`).join('')}</div>
+    <div class="chips">${[['all', '全部优先级'], ['must', '必去'], ['want', '想去'], ['pass', '顺路']].map(([k, n]) => `<button class="chip" data-act="fav-pri" data-v="${k}" aria-pressed="${ui.favPri === k}">${n}</button>`).join('')}
+      ${[['all', '全部状态'], ['unvisited', '未去'], ['visited', '已去']].map(([k, n]) => `<button class="chip" data-act="fav-status" data-v="${k}" aria-pressed="${ui.favStatus === k}">${n}</button>`).join('')}</div>
+  </section>
+  <section class="list" id="fav-list">${ui.favTab === 'plan' ? planRows(list) : favRows(list)}</section>`;
+  $('#page').innerHTML = html;
+  const q = $('#fav-q');
+  q.oninput = () => { ui.favQuery = q.value; const l = db.places.filter(favMatches); $('#fav-list').innerHTML = ui.favTab === 'plan' ? planRows(l) : favRows(l); };
+}
+function planRows(list) {
+  const groups = {}; list.forEach(p => { const k = p.plan || '~'; (groups[k] = groups[k] || []).push(p); });
+  const keys = Object.keys(groups).sort();
+  if (!keys.length) return favRows([]);
+  return keys.map(k => `<div class="day-h"><span>${k === '~' ? '还没安排日期' : dayLabel(k)}</span><span>${groups[k].length} 个</span></div>` + favRows(groups[k])).join('');
+}
+function favRows(list) {
+  if (!list.length) return '<div class="muted small" style="padding:8px">没有符合条件的地点。</div>';
+  return list.map(p => `<div class="prow" style="cursor:default"><button class="prow-main" data-act="place-edit" data-id="${p.id}"><div class="grow">
+      <div class="t">${esc(p.name)}</div>
+      <div class="s">${[p.category, p.city].filter(Boolean).map(esc).join(' · ')}${p.note ? ' · ' + esc(p.note) : ''}</div>
+      <div class="meta small" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><span class="badge ${p.priority === 'must' ? 'must' : ''}">${PRIORITIES[p.priority] || '想去'}</span>${p.visited ? '<span class="badge ok">已去</span>' : ''}${p.plan && ui.favTab !== 'plan' ? `<span class="badge accent">${planLabel(p.plan)}</span>` : ''}${!hasXY(p) ? '<span class="badge warn">待确认位置</span>' : ''}${p.sample ? '<span class="badge sample">示例</span>' : ''}</div>
+    </div>${ui.origin && hasXY(p) ? `<div style="text-align:right;flex:none"><div class="dist small">${fmtDist(distM(ui.origin, p))}</div><div class="dist-type">直线</div></div>` : ''}</button>
+    <a class="map-link" href="${esc(gPlace(p))}" target="_blank" rel="noopener" aria-label="在 Google 地图打开 ${esc(p.name)}">${ICON.nearby}<span>地图</span></a></div>`).join('');
+}
+function findDuplicates(cand, excludeId) {
+  const n = normName(cand.name);
+  if (!n) return [];
+  return db.places.filter(p => p.id !== excludeId && normName(p.name) === n).map(p => ({ p, far: hasXY(p) && hasXY(cand) && distM(p, cand) > 300 }));
+}
+function placeForm(existing, prefill) {
+  const p = existing ? clone(existing) : Object.assign({ name: '', category: '餐厅', city: '', address: '', lat: null, lng: null, mapUrl: '', note: '', priority: 'want', visited: false, hours: '', cost: null, stayMin: null, plan: '', locSource: '' }, prefill || {});
+  let dupAck = false; let linkMsg = '';
+  const s = openSheet(existing ? '编辑地点' : '新增地点', '', () => draw());
+  function readInputs() {
+    const v = id => { const el = $('#' + id, s.body); return el ? el.value : ''; };
+    p.name = v('pf-name').trim(); p.city = v('pf-city').trim(); p.address = v('pf-address').trim(); p.mapUrl = v('pf-url').trim();
+    p.plan = v('pf-plan'); p.note = v('pf-note').trim(); p.hours = v('pf-hours').trim(); p.cost = num(v('pf-cost')); p.stayMin = num(v('pf-stay'));
+  }
+  function draw() {
+    const loc = hasXY(p) ? `<div class="note ok">已确认位置：${fmtXY(p)}${p.locSource ? '（' + esc(p.locSource) + '）' : ''}</div>`
+      : '<div class="note warn">还没有确认位置。没有位置也能保存，但会放进「待确认」，不能计算距离。</div>';
+    s.set(`
+      ${existing ? `<a class="btn soft block" href="${esc(gPlace(p))}" target="_blank" rel="noopener">${ICON.ext} 在 Google 地图打开</a>${!hasXY(p) && !p.mapUrl ? '<div class="small muted" style="margin-top:-8px">这个地点还没确认位置，会按名称和地址在 Google 地图搜索，请核对是不是正确的分店。</div>' : ''}` : ''}
+      <label class="f">名称 *<input class="input" id="pf-name" value="${esc(p.name)}" placeholder="例如 浅草今半 / 浅草寺"></label>
+      <div class="stack"><span class="small muted" style="font-weight:600">分类</span><div class="chips wrap">${PLACE_CATS.map(c => `<button class="chip" data-cat="${c}" aria-pressed="${p.category === c}">${c}</button>`).join('')}</div></div>
+      <div class="stack"><span class="small muted" style="font-weight:600">优先级</span><div class="seg">${Object.entries(PRIORITIES).map(([k, n]) => `<button data-pri="${k}" aria-pressed="${p.priority === k}">${n}</button>`).join('')}</div></div>
+      <div class="stack"><span class="small muted" style="font-weight:600">状态</span><div class="seg"><button data-vis="0" aria-pressed="${!p.visited}">未去</button><button data-vis="1" aria-pressed="${!!p.visited}">已去</button></div></div>
+      <div class="card" style="padding:12px">
+        <div class="section-h"><h2 style="font-size:15px">位置与分店</h2></div>
+        ${loc}
+        <div class="btns"><button class="btn soft" id="pf-search">搜索确认</button><button class="btn" id="pf-map">地图选点</button>
+          <button class="btn" id="pf-link">用链接/坐标</button>${hasXY(p) ? '<button class="btn" id="pf-clear">清除位置</button>' : `<a class="btn" href="${gSearch([p.name, p.city].filter(Boolean).join(' ') || '日本')}" target="_blank" rel="noopener">${ICON.ext} 去 Google 找</a>`}</div>
+        <label class="f">地图链接（可选）<input class="input" id="pf-url" value="${esc(p.mapUrl)}" placeholder="https://maps.google.com/…" inputmode="url"></label>
+        ${linkMsg ? `<div class="note ${linkMsg.ok ? 'ok' : 'warn'} small">${esc(linkMsg.text)}</div>` : ''}
+      </div>
+      <label class="f">计划哪天去（可选，不填也没关系）<input class="input" type="date" id="pf-plan" value="${esc(p.plan || '')}"></label>
+      <label class="f">城市或地区<input class="input" id="pf-city" value="${esc(p.city)}" placeholder="例如 东京 / 京都 / 大阪"></label>
+      <label class="f">地址<input class="input" id="pf-address" value="${esc(p.address)}"></label>
+      <label class="f">备注<textarea class="input" id="pf-note" placeholder="例如 想吃寿喜锅、需要预约">${esc(p.note)}</textarea></label>
+      <label class="f">营业时间（自己记录，未核实）<input class="input" id="pf-hours" value="${esc(p.hours)}" placeholder="例如 11:00–22:00 周三休"></label>
+      <div class="btns"><label class="f">预计人均（日元）<input class="input" id="pf-cost" inputmode="decimal" value="${p.cost ?? ''}"></label>
+        <label class="f">打算停留（分钟）<input class="input" id="pf-stay" inputmode="numeric" value="${p.stayMin ?? ''}"></label></div>
+      <div id="pf-dup"></div><div id="pf-err" class="err"></div>
+      <button class="btn primary big" id="pf-save">保存</button>
+      ${existing ? `<div class="btns"><button class="btn" id="pf-go">带我去</button><button class="btn danger" id="pf-del">删除这个地点</button></div>` : ''}`);
+    $$('[data-cat]', s.body).forEach(b => b.onclick = () => { readInputs(); p.category = b.dataset.cat; draw(); });
+    $$('[data-pri]', s.body).forEach(b => b.onclick = () => { readInputs(); p.priority = b.dataset.pri; draw(); });
+    $$('[data-vis]', s.body).forEach(b => b.onclick = () => { readInputs(); p.visited = b.dataset.vis === '1'; draw(); });
+    const useLoc = loc => {
+      if (!loc) return; p.lat = loc.lat; p.lng = loc.lng; p.locSource = loc.source || '';
+      if (loc.address && !p.address) p.address = loc.address;
+      if (loc.mapUrl && !p.mapUrl) p.mapUrl = loc.mapUrl;
+      if (!p.name && loc.name) p.name = loc.name;
+      linkMsg = ''; dupAck = false; draw();
+    };
+    $('#pf-search', s.body).onclick = async () => { readInputs(); useLoc(await pickLocation({ title: '搜索并确认分店', modes: ['search', 'link', 'map'], query: [p.name, p.city].filter(Boolean).join(' '), near: ui.origin })); };
+    $('#pf-map', s.body).onclick = async () => { readInputs(); useLoc(await pickLocation({ title: '地图选点', modes: ['map', 'search', 'link'], near: hasXY(p) ? p : ui.origin })); };
+    $('#pf-link', s.body).onclick = async () => { readInputs(); useLoc(await pickLocation({ title: '用链接或坐标', modes: ['link', 'search', 'map'], _link: p.mapUrl, near: ui.origin })); };
+    const clr = $('#pf-clear', s.body); if (clr) clr.onclick = () => { readInputs(); p.lat = null; p.lng = null; p.locSource = ''; draw(); };
+    const url = $('#pf-url', s.body);
+    url.onchange = () => {
+      readInputs(); if (!p.mapUrl) { linkMsg = ''; draw(); return; }
+      const r = parseMapLink(p.mapUrl);
+      if (r.ok) {
+        if (!hasXY(p)) { p.lat = r.lat; p.lng = r.lng; p.locSource = r.how; linkMsg = { ok: true, text: '已从链接读取位置：' + fmtXY(r) + (r.outside ? '（注意：不在日本）' : '') }; }
+        else linkMsg = { ok: true, text: '链接里的位置是 ' + fmtXY(r) + '。目前保留原来的位置，如要改用链接位置，请先「清除位置」再粘贴。' };
+        if (!p.name && r.name) p.name = r.name;
+      } else linkMsg = { ok: false, text: r.msg };
+      draw();
+    };
+    $('#pf-save', s.body).onclick = () => {
+      readInputs();
+      if (!p.name) { $('#pf-err', s.body).textContent = '请填写名称。'; return; }
+      const dups = findDuplicates(p, existing && existing.id);
+      if (dups.length && !dupAck) {
+        $('#pf-dup', s.body).innerHTML = `<div class="note warn">收藏里已经有同名地点：${dups.map(d => esc(d.p.name) + (d.p.city ? '（' + esc(d.p.city) + '）' : '') + (d.far ? '，位置相差较远，可能是不同分店' : '')).join('；')}。确定还要保存吗？</div>
+          <button class="btn block" id="pf-dup-ok">确定，仍然保存</button>`;
+        $('#pf-dup-ok', s.body).onclick = () => { dupAck = true; $('#pf-save', s.body).click(); };
+        return;
+      }
+      const now = Date.now();
+      if (existing) { const i = db.places.findIndex(x => x.id === existing.id); db.places[i] = Object.assign({}, db.places[i], p, { updatedAt: now }); }
+      else db.places.unshift(Object.assign(p, { id: uid(), createdAt: now, updatedAt: now }));
+      save(); s.close(); toast(existing ? '已保存修改' : '已加入收藏'); render();
+    };
+    if (existing) {
+      $('#pf-del', s.body).onclick = async () => {
+        if (!(await askConfirm(`删除「${esc(existing.name)}」？删除后无法恢复（除非你有备份）。`, '删除', true))) return;
+        db.places = db.places.filter(x => x.id !== existing.id); save(); s.close(); toast('已删除'); render();
+      };
+      $('#pf-go', s.body).onclick = () => { s.close(); goPlace(existing.id); };
+    }
+  }
+}
+function goPlace(id) {
+  const p = db.places.find(x => x.id === id); if (!p) return;
+  while (sheets.length) sheets[sheets.length - 1].close();
+  setDest({ name: p.name, lat: p.lat, lng: p.lng, address: p.address, placeId: p.id, mapUrl: p.mapUrl, city: p.city, source: '我的收藏' });
+}
+
+/* 批量粘贴 */
+function batchAdd() {
+  let rows = null; let cat = '其他', city = '';
+  const s = openSheet('批量粘贴地点', '', () => draw());
+  function draw() {
+    if (!rows) {
+      s.set(`<p class="muted small" style="margin:0">每行一个地点名称，例如从备忘录复制过来。添加后都会放进「待确认」，之后逐个确认位置和分店，不会自动猜测。</p>
+        <textarea class="input" id="ba-text" style="min-height:180px" placeholder="一兰拉面 新宿中央东口店&#10;浅草寺&#10;teamLab Planets"></textarea>
+        <label class="f">这些地点的城市（可选）<input class="input" id="ba-city" placeholder="例如 东京" value="${esc(city)}"></label>
+        <div class="stack"><span class="small muted" style="font-weight:600">默认分类（之后可逐个修改）</span><div class="chips wrap">${PLACE_CATS.map(c => `<button class="chip" data-cat="${c}" aria-pressed="${cat === c}">${c}</button>`).join('')}</div></div>
+        <button class="btn primary big" id="ba-next">预览</button>`);
+      $$('[data-cat]', s.body).forEach(b => b.onclick = () => { city = $('#ba-city', s.body).value; const t = $('#ba-text', s.body).value; cat = b.dataset.cat; draw(); $('#ba-text', s.body).value = t; });
+      $('#ba-next', s.body).onclick = () => {
+        city = $('#ba-city', s.body).value.trim();
+        const lines = $('#ba-text', s.body).value.split(/\r?\n/).map(l => l.replace(/^[\s\-*•·\d.、)）]+/, '').trim()).filter(Boolean);
+        if (!lines.length) { toast('请先粘贴地点名称'); return; }
+        const seen = new Set();
+        rows = lines.map(name => {
+          const n = normName(name); const inBatch = seen.has(n); seen.add(n);
+          const exist = db.places.some(p => normName(p.name) === n);
+          return { name, dup: inBatch ? '本次重复' : exist ? '收藏里已有' : '', keep: !inBatch && !exist };
+        });
+        draw();
+      };
+    } else {
+      const k = rows.filter(r => r.keep).length;
+      s.set(`<div class="note">共 ${rows.length} 行，将添加 ${k} 个到「待确认」。标为重复的默认不添加，你可以勾选改变。</div>
+        <div class="stack">${rows.map((r, i) => `<label class="prow" style="cursor:pointer"><input type="checkbox" data-i="${i}" ${r.keep ? 'checked' : ''} style="width:22px;height:22px"><div class="grow"><div class="t">${esc(r.name)}</div>${r.dup ? `<div class="s" style="color:var(--warn)">重复提醒：${r.dup}</div>` : ''}</div></label>`).join('')}</div>
+        <div class="btns"><button class="btn" id="ba-back">返回修改</button><button class="btn primary" id="ba-ok">添加 ${k} 个</button></div>`);
+      $$('[data-i]', s.body).forEach(c => c.onchange = () => { rows[+c.dataset.i].keep = c.checked; draw(); });
+      $('#ba-back', s.body).onclick = () => { rows = null; draw(); };
+      $('#ba-ok', s.body).onclick = () => {
+        const now = Date.now();
+        rows.filter(r => r.keep).forEach((r, i) => db.places.unshift({ id: uid(), name: r.name, category: cat, city, address: '', lat: null, lng: null, mapUrl: '', note: '', priority: 'want', visited: false, hours: '', cost: null, stayMin: null, createdAt: now - i, updatedAt: now }));
+        save(); s.close(); ui.favTab = 'pending'; toast(`已添加 ${k} 个，请逐个确认位置`); setPage('favs');
+      };
+    }
+  }
+}
+
+/* CSV */
+function parseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(x => String(x).trim() !== ''));
+}
+const csvCell = v => { const s = String(v ?? ''); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const toCSV = rows => '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+const CSV_COLS = { name: ['名称', 'name', '店名', '地点'], category: ['分类', 'category', '类别'], city: ['城市', '地区', 'city'], address: ['地址', 'address'],
+  lat: ['纬度', 'lat', 'latitude'], lng: ['经度', 'lng', 'lon', 'longitude'], mapUrl: ['地图链接', '链接', 'url', 'link'], note: ['备注', 'note', 'notes'],
+  priority: ['优先级', 'priority'], visited: ['状态', 'status'], hours: ['营业时间', 'hours'], cost: ['人均', '人均消费', 'cost'], plan: ['计划日期', 'plan', 'date'] };
+function parsePlanDate(v) {
+  v = String(v || '').trim(); let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+  if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+  m = v.match(/^(\d{1,2})[/月.](\d{1,2})日?$/);
+  if (m) return `${jstToday().slice(0, 4)}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+  return '';
+}
+function csvImport() {
+  const s = openSheet('导入 CSV 名单', `<p class="muted small" style="margin:0">第一行写栏目名称。可用的栏目：名称、分类、城市、地址、纬度、经度、地图链接、备注、优先级、状态、营业时间、人均、计划日期。只有「名称」是必填。有坐标或可识别地图链接的会直接加入，其余放进「待确认」。</p>
+    <button class="btn" id="csv-tpl">下载空白模板</button>
+    <label class="btn primary big" style="position:relative">选择 CSV 文件<input type="file" id="csv-file" accept=".csv,text/csv,text/plain" style="position:absolute;inset:0;opacity:0"></label>
+    <div id="csv-out"></div>`, api => {
+    $('#csv-tpl', api.body).onclick = () => saveFile('收藏地点模板.csv', toCSV([Object.values(CSV_COLS).map(a => a[0]), ['浅草寺', '景点', '东京', '東京都台東区浅草2-3-1', '35.7148', '139.7967', '', '早上去人少', '必去', '未去', '', '', '2026-11-30']]), 'text/csv');
+    $('#csv-file', api.body).onchange = async e => {
+      const file = e.target.files[0]; if (!file) return;
+      let rows; try { rows = parseCSV(await readFileText(file)); } catch (err) { $('#csv-out', api.body).innerHTML = '<div class="note warn">文件读取失败。</div>'; return; }
+      if (!rows.length) { $('#csv-out', api.body).innerHTML = '<div class="note warn">文件是空的。</div>'; return; }
+      const head = rows[0].map(h => String(h).trim().toLowerCase());
+      const idx = {}; for (const [k, names] of Object.entries(CSV_COLS)) idx[k] = head.findIndex(h => names.some(n => n.toLowerCase() === h));
+      let data = rows.slice(1);
+      if (idx.name < 0) { idx.name = 0; data = rows; Object.keys(idx).forEach(k => { if (k !== 'name') idx[k] = -1; }); }
+      const seen = new Set();
+      const items = data.map(r => {
+        const g = k => idx[k] >= 0 ? String(r[idx[k]] ?? '').trim() : '';
+        const name = g('name'); if (!name) return null;
+        let lat = num(g('lat')), lng = num(g('lng')), src = lat != null && lng != null ? 'CSV 坐标' : '';
+        const url = g('mapUrl');
+        if ((lat == null || lng == null) && url) { const pr = parseMapLink(url); if (pr.ok) { lat = pr.lat; lng = pr.lng; src = pr.how; } }
+        if (lat == null || lng == null || Math.abs(lat) > 90 || Math.abs(lng) > 180) { lat = null; lng = null; src = ''; }
+        const catRaw = g('category'); const category = PLACE_CATS.find(c => catRaw.includes(c)) || (/咖啡|cafe|coffee/i.test(catRaw) ? '咖啡厅' : /餐|吃|食|restaurant/i.test(catRaw) ? '餐厅' : /景|sight|spot/i.test(catRaw) ? '景点' : /购|买|shop/i.test(catRaw) ? '购物' : '其他');
+        const pr = g('priority'); const priority = /必/.test(pr) ? 'must' : /顺/.test(pr) ? 'pass' : 'want';
+        const n = normName(name); const dupIn = seen.has(n); seen.add(n);
+        const dupEx = db.places.some(p => normName(p.name) === n);
+        return { name, category, city: g('city'), address: g('address'), lat, lng, locSource: src, mapUrl: url, note: g('note'), priority, visited: /已去|visited|done/i.test(g('visited')), hours: g('hours'), cost: num(g('cost')), stayMin: null, plan: parsePlanDate(g('plan')),
+          _dup: dupIn ? '文件内重复' : dupEx ? '收藏里已有' : '', _keep: !dupIn && !dupEx };
+      }).filter(Boolean);
+      const okN = items.filter(i => i._keep && i.lat != null).length, pendN = items.filter(i => i._keep && i.lat == null).length, dupN = items.filter(i => i._dup).length;
+      $('#csv-out', api.body).innerHTML = `<div class="note">读到 ${items.length} 个地点：${okN} 个有位置，${pendN} 个将进入「待确认」${dupN ? `，${dupN} 个疑似重复（默认不导入）` : ''}。</div>
+        <div class="scroll-x"><table class="preview"><tr><th>名称</th><th>分类</th><th>位置</th><th>提醒</th></tr>${items.slice(0, 50).map(i => `<tr><td>${esc(i.name)}</td><td>${esc(i.category)}</td><td>${i.lat != null ? '有' : '<span style="color:var(--warn)">待确认</span>'}</td><td style="color:var(--warn)">${esc(i._dup)}</td></tr>`).join('')}</table></div>
+        ${items.length > 50 ? `<p class="small muted">只显示前 50 行。</p>` : ''}
+        <button class="btn primary big" id="csv-ok">导入 ${okN + pendN} 个</button>`;
+      $('#csv-ok', api.body).onclick = () => {
+        const now = Date.now();
+        items.filter(i => i._keep).forEach((i, k) => { delete i._dup; delete i._keep; db.places.unshift(Object.assign(i, { id: uid(), createdAt: now - k, updatedAt: now })); });
+        save(); api.close(); if (pendN) ui.favTab = 'pending'; toast(`已导入 ${okN + pendN} 个地点`); setPage('favs');
+      };
+    };
+  });
+}
+
+/* ---------- 页面：旅行账本 ---------- */
+function renderLedger() {
+  const s = db.settings;
+  const all = db.expenses.slice().sort((a, b) => b.datetime.localeCompare(a.datetime));
+  const today = sumUp(all.filter(e => e.datetime.slice(0, 10) === jstToday()));
+  const trip = sumUp(all.filter(inTrip));
+  let html = `<button class="btn primary big" data-act="exp-new">${ICON.plus} 记一笔</button>`;
+  html += `<section class="card" style="padding:12px 14px">
+    <div class="row"><div class="grow small">${s.rate ? `<b>汇率</b> 1 MYR = ${s.rate} JPY <span class="muted">（${esc(s.rateSource || '手动填写')}${s.rateTime ? '，' + esc(s.rateTime) : ''}）</span>` : '<b style="color:var(--warn)">还没有设置汇率</b> <span class="muted">设置后才能显示马币参考金额</span>'}</div>
+    <button class="btn sm" data-act="rate-edit">${s.rate ? '修改' : '设置'}</button></div>
+    ${s.rate ? '<div class="small muted">修改汇率只影响之后新记的账，已记的账保留当时的汇率。</div>' : ''}</section>`;
+  const budgetBlock = () => {
+    if (!s.budget) return '<button class="btn sm" data-act="trip-settings">设置旅行预算</button>';
+    const used = s.budgetCurrency === 'JPY' ? trip.jpy : trip.myr;
+    const left = s.budget - used; const pct = Math.min(100, used / s.budget * 100);
+    const f = s.budgetCurrency === 'JPY' ? yen : rm;
+    return `<div class="stack" style="gap:4px"><div class="row small"><span class="grow">预算 ${f(s.budget)}</span><b class="num" style="color:${left < 0 ? 'var(--must)' : 'inherit'}">${left < 0 ? '已超出 ' + f(-left) : '剩余 ' + f(left)}</b></div>
+      <div class="bar ${left < 0 ? 'over' : ''}"><i style="width:${pct}%"></i></div></div>`;
+  };
+  html += `<section class="stat-row">
+    <div class="stat"><div class="k">今天（日本时间）</div><div class="v">${yen(today.jpy)}</div><div class="v2">约 ${rm(today.myr)}</div></div>
+    <div class="stat"><div class="k">本次旅行累计</div><div class="v">${yen(trip.jpy)}</div><div class="v2">约 ${rm(trip.myr)}</div></div>
+  </section>
+  <section class="card">
+    ${budgetBlock()}
+    ${trip.missing ? `<div class="note warn small">有账目缺少汇率，换算金额没有算进去。请先设置汇率，或编辑那几笔账补上汇率。</div>` : ''}
+    <div class="section-h"><h2 style="font-size:15px">各分类支出</h2><span class="small muted">${s.tripStart || s.tripEnd ? `${esc(s.tripStart || '…')} 至 ${esc(s.tripEnd || '…')}` : '全部日期'}</span></div>
+    ${trip.n ? (() => { const max = Math.max(...Object.values(trip.byCat).map(v => v.jpy), 1); return EXP_CATS.filter(c => trip.byCat[c]).sort((a, b) => trip.byCat[b].jpy - trip.byCat[a].jpy).map(c => `<div class="catrow"><span>${c}</span><div class="bar"><i style="width:${trip.byCat[c].jpy / max * 100}%"></i></div><span class="amt">${yen(trip.byCat[c].jpy)}<br><span class="small muted">${rm(trip.byCat[c].myr)}</span></span></div>`).join(''); })() : '<div class="muted small">还没有支出。</div>'}
+    <p class="small muted" style="margin:0">马币为参考金额；填写了信用卡实际入账的，按实际入账计算。${s.icMode === 'topup' ? '交通卡：充值时计入。' : '交通卡：每次扣款时计入，充值不计入。'}换汇不算消费。</p>
+    <div class="btns"><button class="btn sm" data-act="trip-settings">预算与记账规则</button><button class="btn sm" data-act="exp-export">导出 CSV（Excel）</button></div>
+  </section>`;
+  if (!all.length) {
+    html += `<section class="card empty">还没有记账。<br>每次花钱后点上面的「记一笔」，几秒钟就能记好。<button class="btn" data-act="load-sample">载入示例数据看看效果</button></section>`;
+  } else {
+    const byDay = {}; all.forEach(e => { const d = e.datetime.slice(0, 10); (byDay[d] = byDay[d] || []).push(e); });
+    html += '<section class="list">' + Object.keys(byDay).sort().reverse().map(d => {
+      const t = sumUp(byDay[d]);
+      return `<div class="day-h"><span>${dayLabel(d)}</span><span class="num">${yen(t.jpy)}</span></div>` + byDay[d].map(expRow).join('');
+    }).join('') + '</section>';
+  }
+  $('#page').innerHTML = html;
+}
+function expRow(e) {
+  const c = counts(e); const j = toJPY(e), m = toMYR(e);
+  const label = e.kind === 'spend' ? (e.category || '其他') : KINDS[e.kind];
+  return `<button class="exp ${c ? '' : 'nocount'}" data-act="exp-edit" data-id="${e.id}">
+    <span class="cat-dot">${esc(label.slice(0, 2))}</span>
+    <div class="grow"><div class="t">${esc(e.merchant || label)}${e.sample ? ' <span class="badge sample">示例</span>' : ''}</div>
+      <div class="s">${esc(e.datetime.slice(11, 16))} · ${esc(e.payment || '')}${e.note ? ' · ' + esc(e.note) : ''}</div>
+      ${c ? '' : `<div class="s" style="color:var(--warn)">不计入消费：${esc(whyNotCounted(e))}</div>`}</div>
+    <div class="a"><b>${fmtOrig(e)}</b><span class="small muted">${e.currency === 'JPY' ? (m != null ? '约 ' + rm(m) : '缺汇率') : (j != null ? '约 ' + yen(j) : '缺汇率')}${e.actualMYR != null ? '（实际入账）' : ''}</span></div>
+  </button>`;
+}
+function expenseForm(existing) {
+  const s0 = db.settings;
+  const e = existing ? clone(existing) : { kind: 'spend', amount: null, currency: 'JPY', category: '餐饮', datetime: jstNow(), merchant: '', placeId: '', payment: '现金', note: '', rate: s0.rate, actualMYR: null };
+  const s = openSheet(existing ? '修改支出' : '记一笔', '', () => draw());
+  function read() {
+    const v = id => { const el = $('#' + id, s.body); return el ? el.value : ''; };
+    e.amount = num(v('ef-amt')); e.datetime = v('ef-dt') || e.datetime; e.merchant = v('ef-merchant').trim(); e.note = v('ef-note').trim();
+    e.rate = num(v('ef-rate')); const am = $('#ef-actual', s.body); if (am) e.actualMYR = num(am.value);
+    const pl = $('#ef-place', s.body); if (pl) e.placeId = pl.value;
+  }
+  function draw() {
+    const favOpts = db.places.slice().sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+    s.set(`
+      <div class="seg">${Object.entries(KINDS).map(([k, n]) => `<button data-kind="${k}" aria-pressed="${e.kind === k}">${n}</button>`).join('')}</div>
+      ${e.kind === 'ictopup' ? `<div class="note small">${db.settings.icMode === 'topup' ? '按你的设定，交通卡充值<b>计入</b>交通支出；之后用交通卡付的账不再重复计算。' : '按你的设定，交通卡充值<b>不计入</b>消费；每次用交通卡付款时再记一笔（付款方式选「交通卡」）。'}可在「预算与记账规则」修改。</div>` : ''}
+      ${e.kind === 'exchange' ? '<div class="note small">换汇是把钱换成另一种货币，不算消费，不会计入支出统计。在这里记录换了多少钱，方便对账。</div>' : ''}
+      <div class="row"><input class="input amount grow" id="ef-amt" inputmode="decimal" placeholder="0" value="${e.amount ?? ''}" aria-label="金额">
+        <div class="seg" style="width:130px">${['JPY', 'MYR'].map(c => `<button data-cur="${c}" aria-pressed="${e.currency === c}">${c === 'JPY' ? '日元' : '马币'}</button>`).join('')}</div></div>
+      <div id="ef-conv" class="small muted"></div>
+      ${e.kind === 'spend' ? `<div class="stack"><span class="small muted" style="font-weight:600">分类</span><div class="chips wrap">${EXP_CATS.map(c => `<button class="chip" data-cat="${c}" aria-pressed="${e.category === c}">${c}</button>`).join('')}</div></div>` : ''}
+      <div class="stack"><span class="small muted" style="font-weight:600">付款方式</span><div class="chips wrap">${PAYMENTS.map(c => `<button class="chip" data-pay="${c}" aria-pressed="${e.payment === c}">${c}</button>`).join('')}</div></div>
+      ${e.payment === '交通卡' && e.kind === 'spend' && db.settings.icMode === 'topup' ? '<div class="note warn small">按你的设定，交通卡在充值时已计入，这一笔不会再计入消费总额。</div>' : ''}
+      <label class="f">日期与时间（日本时间）<input class="input" type="datetime-local" id="ef-dt" value="${esc(e.datetime)}"></label>
+      <label class="f">商家或地点<input class="input" id="ef-merchant" value="${esc(e.merchant)}" placeholder="例如 一兰拉面"></label>
+      ${favOpts.length ? `<label class="f">关联收藏（可选）<select class="input" id="ef-place"><option value="">不关联</option>${favOpts.map(p => `<option value="${p.id}" ${e.placeId === p.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label>` : ''}
+      <label class="f">备注<input class="input" id="ef-note" value="${esc(e.note)}"></label>
+      <label class="f">这一笔采用的汇率（1 MYR = ? JPY）<input class="input" id="ef-rate" inputmode="decimal" value="${e.rate ?? ''}" placeholder="例如 33.5"></label>
+      ${e.payment === '信用卡' ? `<label class="f">信用卡实际入账金额（MYR，可之后补填）<input class="input" id="ef-actual" inputmode="decimal" value="${e.actualMYR ?? ''}" placeholder="看到账单后填写"></label><div class="small muted" style="margin-top:-8px">填写后，马币统计优先用这个实际金额。</div>` : ''}
+      <div id="ef-err" class="err"></div>
+      <button class="btn primary big" id="ef-save">保存</button>
+      ${existing ? '<button class="btn danger block" id="ef-del">删除这笔</button>' : ''}`);
+    const conv = () => {
+      const a = num($('#ef-amt', s.body).value), r = num($('#ef-rate', s.body).value);
+      $('#ef-conv', s.body).textContent = a == null ? '' : !r ? '没有汇率，暂时无法换算' : e.currency === 'JPY' ? `约 ${rm(a / r)}（参考）` : `约 ${yen(a * r)}（参考）`;
+    };
+    $('#ef-amt', s.body).oninput = conv; $('#ef-rate', s.body).oninput = conv; conv();
+    $$('[data-kind]', s.body).forEach(b => b.onclick = () => { read(); e.kind = b.dataset.kind; if (e.kind === 'ictopup') { e.category = '交通'; if (e.payment === '交通卡') e.payment = '现金'; } draw(); });
+    $$('[data-cur]', s.body).forEach(b => b.onclick = () => { read(); e.currency = b.dataset.cur; draw(); });
+    $$('[data-cat]', s.body).forEach(b => b.onclick = () => { read(); e.category = b.dataset.cat; draw(); });
+    $$('[data-pay]', s.body).forEach(b => b.onclick = () => { read(); e.payment = b.dataset.pay; if (e.payment !== '信用卡') e.actualMYR = null; draw(); });
+    if (!existing && e.amount == null) setTimeout(() => { const a = $('#ef-amt', s.body); if (a) a.focus(); }, 80);
+    $('#ef-save', s.body).onclick = () => {
+      read();
+      if (e.amount == null || e.amount <= 0) { $('#ef-err', s.body).textContent = '请输入金额。'; return; }
+      if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(e.datetime)) { $('#ef-err', s.body).textContent = '请选择日期与时间。'; return; }
+      e.datetime = e.datetime.slice(0, 16);
+      if (e.kind !== 'spend') e.category = e.kind === 'ictopup' ? '交通' : '其他';
+      if (existing) { const i = db.expenses.findIndex(x => x.id === existing.id); db.expenses[i] = Object.assign({}, db.expenses[i], e, { updatedAt: Date.now() }); }
+      else db.expenses.push(Object.assign(e, { id: uid(), createdAt: Date.now() }));
+      save(); s.close(); toast(existing ? '已保存修改' : '已记一笔'); render();
+    };
+    if (existing) $('#ef-del', s.body).onclick = async () => {
+      if (!(await askConfirm(`删除这笔 ${fmtOrig(existing)} 的记录？`, '删除', true))) return;
+      db.expenses = db.expenses.filter(x => x.id !== existing.id); save(); s.close(); toast('已删除'); render();
+    };
+  }
+}
+function rateEdit() {
+  const st = db.settings; let fetched = null;
+  const s = openSheet('设置汇率', '', () => draw());
+  function draw() {
+    s.set(`<label class="f">1 马币（MYR）= 多少日元（JPY）<input class="input amount" id="re-rate" inputmode="decimal" value="${st.rate ?? ''}" placeholder="例如 33.5"></label>
+      <p class="small muted" style="margin:0">可以填你换钱时拿到的汇率。修改后只影响之后新记的账，已记的每一笔都保留当时的汇率。</p>
+      <button class="btn primary big" id="re-save">保存手动汇率</button>
+      <div class="card" style="padding:12px"><div class="section-h"><h2 style="font-size:15px">获取参考汇率（可选）</h2></div>
+        <p class="small muted" style="margin:0">从免费的 Frankfurter 服务读取欧洲央行公布的参考汇率（每个工作日更新一次）。和你实际换钱或刷卡的汇率会有差别。</p>
+        ${fetched ? (fetched.error ? `<div class="note warn small">${esc(fetched.error)}</div>` : `<div class="note ok">1 MYR = ${fetched.rate} JPY（欧洲央行，${esc(fetched.date)}）</div><button class="btn block" id="re-use">使用这个汇率</button>`) : ''}
+        <button class="btn" id="re-fetch">获取参考汇率</button></div>`);
+    $('#re-save', s.body).onclick = () => {
+      const r = num($('#re-rate', s.body).value); if (!r || r <= 0) { toast('请输入正确的汇率'); return; }
+      st.rate = r; st.rateSource = '手动填写'; st.rateTime = jstDate(new Date()); save(); s.close(); render(); toast('汇率已保存');
+    };
+    $('#re-fetch', s.body).onclick = async () => {
+      $('#re-fetch', s.body).innerHTML = '<span class="spinner"></span> 读取中';
+      try {
+        let d;
+        try { d = await fetchJSON('https://api.frankfurter.dev/v1/latest?base=MYR&symbols=JPY', {}, 12000); }
+        catch (e1) { d = await fetchJSON('https://api.frankfurter.app/latest?from=MYR&to=JPY', {}, 12000); }
+        if (!d || !d.rates || !d.rates.JPY) throw new Error('no');
+        fetched = { rate: Math.round(d.rates.JPY * 1000) / 1000, date: d.date };
+      } catch (e) { fetched = { error: '暂时读取不到参考汇率（可能没有网络，或在预览环境中被限制）。请手动填写。' }; }
+      if (s.el.isConnected) draw();
+    };
+    const use = $('#re-use', s.body);
+    if (use) use.onclick = () => { st.rate = fetched.rate; st.rateSource = '欧洲央行参考汇率 via Frankfurter'; st.rateTime = fetched.date + ' 公布'; save(); s.close(); render(); toast('已使用参考汇率'); };
+  }
+}
+function tripSettings() {
+  const st = db.settings;
+  openSheet('预算与记账规则', `
+    <div class="btns"><label class="f">旅行预算<input class="input" id="ts-budget" inputmode="decimal" value="${st.budget ?? ''}" placeholder="不填则不显示"></label>
+      <label class="f">预算币种<select class="input" id="ts-cur"><option value="JPY" ${st.budgetCurrency === 'JPY' ? 'selected' : ''}>日元 JPY</option><option value="MYR" ${st.budgetCurrency === 'MYR' ? 'selected' : ''}>马币 MYR</option></select></label></div>
+    <div class="btns"><label class="f">旅行开始日期<input class="input" type="date" id="ts-start" value="${esc(st.tripStart)}"></label><label class="f">结束日期<input class="input" type="date" id="ts-end" value="${esc(st.tripEnd)}"></label></div>
+    <p class="small muted" style="margin:0">设置日期后，「本次旅行累计」只统计这段日期内的账。不填就统计全部。</p>
+    <div class="stack"><span class="small muted" style="font-weight:600">交通卡（Suica / ICOCA 等）怎么记？</span>
+      <label class="prow"><input type="radio" name="ic" value="usage" ${st.icMode !== 'topup' ? 'checked' : ''}><div class="grow"><div class="t">每次扣款时计入（推荐）</div><div class="s">充值只是把钱放进卡里，不算消费；坐车、买东西用交通卡付款时，记一笔并选「交通卡」。</div></div></label>
+      <label class="prow"><input type="radio" name="ic" value="topup" ${st.icMode === 'topup' ? 'checked' : ''}><div class="grow"><div class="t">充值时一次计入</div><div class="s">充值金额直接算作交通支出；之后用交通卡付款的账不再重复计算。适合懒得每次记账的人。</div></div></label></div>
+    <button class="btn primary big" id="ts-save">保存</button>`, api => {
+    $('#ts-save', api.body).onclick = () => {
+      st.budget = num($('#ts-budget', api.body).value); st.budgetCurrency = $('#ts-cur', api.body).value;
+      st.tripStart = $('#ts-start', api.body).value; st.tripEnd = $('#ts-end', api.body).value;
+      const ic = $('input[name=ic]:checked', api.body); st.icMode = ic ? ic.value : 'usage';
+      save(); api.close(); render(); toast('已保存');
+    };
+  });
+}
+function exportExpenses() {
+  if (!db.expenses.length) { toast('还没有账目可以导出'); return; }
+  const rows = [['日期时间(日本时间)', '类型', '分类', '原始金额', '币种', '采用汇率(1MYR=JPY)', '日元金额', '马币参考金额', '信用卡实际入账(MYR)', '计入消费', '不计入原因', '付款方式', '商家或地点', '关联收藏', '备注', '示例数据']];
+  db.expenses.slice().sort((a, b) => a.datetime.localeCompare(b.datetime)).forEach(e => {
+    const j = toJPY(e), m = e.currency === 'MYR' ? e.amount : (e.rate ? e.amount / e.rate : null);
+    const pl = e.placeId ? (db.places.find(p => p.id === e.placeId) || {}).name || '' : '';
+    rows.push([e.datetime.replace('T', ' '), KINDS[e.kind], expCat(e), e.amount, e.currency, e.rate ?? '', j != null ? Math.round(j) : '', m != null ? m.toFixed(2) : '', e.actualMYR ?? '', counts(e) ? '是' : '否', whyNotCounted(e), e.payment, e.merchant, pl, e.note, e.sample ? '是' : '']);
+  });
+  saveFile(`旅行账本-${jstToday()}.csv`, toCSV(rows), 'text/csv');
+}
+
+/* ---------- 数据与设置 ---------- */
+function settingsSheet() {
+  const nP = db.places.length, nE = db.expenses.length, nS = db.places.filter(p => p.sample).length + db.expenses.filter(e => e.sample).length;
+  openSheet('数据与设置', `
+    <section class="card"><div class="section-h"><h2>你的资料保存在哪里？</h2></div>
+      <ul class="status-list">
+        <li>• 收藏和账本只保存在<b>这台手机的这个浏览器</b>里，没有上传到任何服务器。</li>
+        <li>• <b>不支持跨设备同步</b>。换手机、换浏览器都看不到这些资料。</li>
+        <li>• <b>清除浏览器资料、使用无痕模式，或 iPhone Safari 长时间（约 7 天）没打开这个网页时，资料可能被删除。</b>建议把网页「添加到主屏幕」，并经常导出备份。</li>
+        <li>• 定位只在你点按钮时使用一次，不保存位置轨迹。</li>
+      </ul>
+      ${storageOK ? '' : '<div class="banner">现在这个浏览器无法保存资料，请马上导出备份。</div>'}
+      <div class="small muted">目前有 ${nP} 个收藏、${nE} 笔账。</div>
+    </section>
+    <section class="card"><div class="section-h"><h2>备份与恢复</h2></div>
+      <button class="btn primary" id="st-backup">导出备份文件</button>
+      <label class="btn" style="position:relative">从备份文件恢复<input type="file" id="st-restore" accept=".json,application/json,text/plain" style="position:absolute;inset:0;opacity:0"></label>
+      <button class="btn" id="st-export-places">导出收藏为 CSV（Excel）</button>
+      <div id="st-restore-out"></div>
+    </section>
+    <section class="card"><div class="section-h"><h2>常用起点</h2></div>
+      ${db.starts.length ? db.starts.map((s, i) => `<div class="row"><div class="grow"><b>${esc(s.name)}</b><div class="small muted">${fmtXY(s)}</div></div><button class="btn sm danger" data-del-start="${i}">删除</button></div>`).join('') : '<div class="muted small">还没有。设置手动起点后，可以把酒店存为常用起点。</div>'}
+      <button class="btn" id="st-add-start">新增常用起点</button>
+    </section>
+    <section class="card"><div class="section-h"><h2>示例数据</h2></div>
+      <p class="small muted" style="margin:0">示例数据都标有「示例」，不是你的真实资料。</p>
+      <div class="btns"><button class="btn" id="st-sample">载入示例</button><button class="btn" id="st-unsample" ${nS ? '' : 'disabled'}>删除全部示例（${nS}）</button></div>
+    </section>
+    <section class="card"><div class="section-h"><h2>功能完成情况</h2><span class="small muted">第一阶段</span></div>
+      <ul class="status-list small">
+        <li><span class="badge ok">可用</span> 收藏的新增、编辑、筛选、批量粘贴、CSV 导入、重复提醒</li>
+        <li><span class="badge ok">可用</span> 定位、手动起点、按直线距离看附近收藏（列表 / 地图）</li>
+        <li><span class="badge ok">可用</span> 附近车站（OpenStreetMap 免费数据，直线距离，线路可能不全）</li>
+        <li><span class="badge ok">可用</span> 打开 Google / Apple 地图查看路线</li>
+        <li><span class="badge ok">可用</span> 记账、马币换算、预算、CSV 导出、备份恢复</li>
+        <li><span class="badge warn">未做</span> 应用内乘车路线、时刻、票价、出口（第二阶段）</li>
+        <li><span class="badge warn">未做</span> 真实步行距离和时间、营业时间自动获取（第二阶段）</li>
+        <li><span class="badge warn">未做</span> 顺路安排建议、跨设备同步（第三阶段）</li>
+      </ul></section>
+    <section class="card"><div class="section-h"><h2>清除全部资料</h2></div>
+      <button class="btn danger" id="st-wipe">清除这台设备上的全部收藏和账本</button></section>
+    <p class="small muted" style="text-align:center;margin:0">地图与地点数据 © OpenStreetMap 贡献者</p>`, api => {
+    $('#st-backup', api.body).onclick = () => saveFile(`日本旅行备份-${jstToday()}.json`, JSON.stringify({ app: 'jp-trip-helper', version: 1, exportedAt: new Date().toISOString(), data: db }, null, 1), 'application/json');
+    $('#st-export-places', api.body).onclick = () => {
+      if (!db.places.length) { toast('还没有收藏'); return; }
+      const cols = Object.values(CSV_COLS).map(a => a[0]);
+      saveFile(`收藏地点-${jstToday()}.csv`, toCSV([cols, ...db.places.map(p => [p.name, p.category, p.city, p.address, p.lat ?? '', p.lng ?? '', p.mapUrl, p.note, PRIORITIES[p.priority], p.visited ? '已去' : '未去', p.hours, p.cost ?? '', p.plan || ''])]), 'text/csv');
+    };
+    $('#st-restore', api.body).onchange = async ev => {
+      const f = ev.target.files[0]; if (!f) return; const out = $('#st-restore-out', api.body);
+      let incoming;
+      try { const j = JSON.parse(await readFileText(f)); if (j.app !== 'jp-trip-helper' || !j.data) throw new Error(); incoming = normalizeDB(j.data); incoming._at = j.exportedAt; }
+      catch (e) { out.innerHTML = '<div class="note warn">这不是本工具导出的备份文件，无法恢复。</div>'; return; }
+      out.innerHTML = `<div class="note">备份时间：${esc(incoming._at ? jstDate(new Date(incoming._at)) + ' ' + jstTime(new Date(incoming._at)) : '未知')}（日本时间），包含 ${incoming.places.length} 个收藏、${incoming.expenses.length} 笔账。</div>
+        <div class="btns"><button class="btn" id="rs-merge">合并到现有资料</button><button class="btn danger" id="rs-replace">用备份替换全部</button></div>
+        <p class="small muted" style="margin:0">合并：保留现有资料，加入备份里没有的项目（适合导入行程文件）。替换：现有资料会被备份完全覆盖。</p>`;
+      $('#rs-merge', out).onclick = () => {
+        const pid = new Set(db.places.map(p => p.id)), eid = new Set(db.expenses.map(e => e.id));
+        let a = 0, b = 0;
+        incoming.places.forEach(p => { if (!pid.has(p.id)) { db.places.push(p); a++; } });
+        incoming.expenses.forEach(e => { if (!eid.has(e.id)) { db.expenses.push(e); b++; } });
+        const st = db.settings, ist = incoming.settings;
+        if (!st.rate && ist.rate) { st.rate = ist.rate; st.rateSource = ist.rateSource; st.rateTime = ist.rateTime; }
+        if (!st.tripStart && !st.tripEnd && (ist.tripStart || ist.tripEnd)) { st.tripStart = ist.tripStart; st.tripEnd = ist.tripEnd; }
+        incoming.starts.forEach(s => { if (!db.starts.some(x => x.name === s.name && distM(x, s) < 30)) db.starts.push(s); });
+        save(); api.close(); render(); toast(`已合并：新增 ${a} 个收藏、${b} 笔账`);
+      };
+      $('#rs-replace', out).onclick = async () => {
+        if (!(await askConfirm('用备份替换现在的全部资料？现在的收藏和账本会被覆盖。', '替换', true))) return;
+        delete incoming._at; db = incoming; save(); api.close(); render(); toast('已从备份恢复');
+      };
+    };
+    $$('[data-del-start]', api.body).forEach(b => b.onclick = async () => {
+      const st = db.starts[+b.dataset.delStart]; if (!(await askConfirm(`删除常用起点「${esc(st.name)}」？`, '删除', true))) return;
+      db.starts.splice(+b.dataset.delStart, 1); save(); api.close(); settingsSheet();
+    });
+    $('#st-add-start', api.body).onclick = async () => {
+      const loc = await pickLocation({ title: '新增常用起点', modes: ['search', 'link', 'map', 'fav'], near: ui.origin });
+      if (!loc) return; addStart(loc); api.close(); settingsSheet();
+    };
+    $('#st-sample', api.body).onclick = () => { loadSample(); api.close(); };
+    $('#st-unsample', api.body).onclick = async () => {
+      if (!(await askConfirm('删除所有标有「示例」的收藏和账目？你自己的资料不受影响。', '删除示例', true))) return;
+      db.places = db.places.filter(p => !p.sample); db.expenses = db.expenses.filter(e => !e.sample); save(); api.close(); render(); toast('示例数据已删除');
+    };
+    $('#st-wipe', api.body).onclick = async () => {
+      if (!(await askConfirm('清除这台设备上的全部收藏、账本和常用起点？如果没有备份，将无法找回。', '全部清除', true))) return;
+      db = freshDB(); save(); ui.dest = null; api.close(); render(); toast('已清除');
+    };
+  });
+}
+function addStart(loc) {
+  openSheet('存为常用起点', `<label class="f">名称<input class="input" id="as-name" value="${esc(loc.name || '')}" placeholder="例如 新宿的酒店"></label><button class="btn primary big" id="as-ok">保存</button>`, api => {
+    $('#as-ok', api.body).onclick = () => {
+      const name = $('#as-name', api.body).value.trim() || '常用起点';
+      db.starts.push({ id: uid(), name, lat: loc.lat, lng: loc.lng, address: loc.address || '' }); save(); api.close();
+      if (ui.origin && ui.origin.lat === loc.lat && ui.origin.lng === loc.lng) { ui.origin.label = name; ui.origin.fromStart = true; }
+      render(); toast('已存为常用起点');
+    };
+  });
+}
+
+/* ---------- 示例数据（都标记 sample） ---------- */
+function loadSample() {
+  const now = Date.now();
+  const P = (name, category, city, lat, lng, priority, note, address) => ({ id: uid(), name, category, city, address: address || '', lat, lng, mapUrl: '', note, priority, visited: false, hours: '', cost: null, stayMin: null, locSource: '示例坐标', sample: true, createdAt: now, updatedAt: now });
+  db.places.push(
+    P('浅草寺', '景点', '东京', 35.71476, 139.79666, 'must', '示例：早上去人比较少', '東京都台東区浅草2-3-1'),
+    P('东京晴空塔', '景点', '东京', 35.71006, 139.81070, 'want', '示例：傍晚看夜景'),
+    P('阿美横丁', '购物', '东京', 35.71010, 139.77450, 'pass', '示例：顺路逛逛'),
+    P('筑地场外市场', '餐厅', '东京', 35.66540, 139.77070, 'must', '示例：想吃海鲜早餐'),
+    P('明治神宫', '景点', '东京', 35.67640, 139.69930, 'want', '示例'),
+    Object.assign(P('一兰拉面（分店待确认）', '餐厅', '东京', null, null, 'want', '示例：批量添加后还没确认分店'), { locSource: '' })
+  );
+  const d = jstToday();
+  const E = (kind, amount, currency, category, time, payment, merchant, note, extra) => Object.assign({ id: uid(), kind, amount, currency, category, datetime: d + 'T' + time, merchant, placeId: '', payment, note, rate: 33, actualMYR: null, sample: true, createdAt: now }, extra || {});
+  db.expenses.push(
+    E('exchange', 1000, 'MYR', '其他', '08:30', '现金', '机场换汇', '示例：换成日元'),
+    E('ictopup', 3000, 'JPY', '交通', '09:00', '现金', 'Suica 充值', '示例'),
+    E('spend', 210, 'JPY', '交通', '09:20', '交通卡', '地铁', '示例'),
+    E('spend', 1280, 'JPY', '餐饮', '12:10', '现金', '拉面店', '示例'),
+    E('spend', 4500, 'JPY', '购物', '15:40', '信用卡', '药妆店', '示例', { actualMYR: 141.2 })
+  );
+  if (!db.settings.rate) { db.settings.rate = 33; db.settings.rateSource = '示例汇率，请改成你的实际汇率'; db.settings.rateTime = ''; }
+  save(); render(); toast('已载入示例数据（都标有「示例」）');
+}
+
+/* ---------- 路由与渲染 ---------- */
+const TITLES = { nearby: '附近', go: '去哪里', favs: '我的收藏', ledger: '旅行账本' };
+function setPage(p) { ui.page = p; try { localStorage.setItem(KEY + '.tab', p); } catch (e) { /* 忽略 */ } window.scrollTo(0, 0); render(); }
+function renderIf(p) { if (ui.page === p) render(); }
+function render() {
+  if (nearMap && ui.page !== 'nearby') { nearMap.remove(); nearMap = null; }
+  $('#title').textContent = TITLES[ui.page];
+  $$('.tab').forEach(t => t.setAttribute('aria-current', t.dataset.v === ui.page ? 'page' : 'false'));
+  ({ nearby: renderNearby, go: renderGo, favs: renderFavs, ledger: renderLedger })[ui.page]();
+  renderBanner();
+}
+
+const actions = {
+  tab: el => setPage(el.dataset.v),
+  gps: () => getGPS(),
+  'manual-origin': () => chooseManualOrigin(),
+  'save-start': () => { if (ui.origin) addStart({ lat: ui.origin.lat, lng: ui.origin.lng, name: ui.origin.label === '手动选择的位置' ? '' : ui.origin.label, address: ui.origin.address }); },
+  'reload-stations': () => loadStations(true),
+  'near-filter': el => { ui.nearFilter = el.dataset.v; ui.nearLimit = 20; render(); },
+  'near-view': el => { ui.nearView = el.dataset.v; render(); },
+  'near-more': () => { ui.nearLimit += 20; render(); },
+  'goto-pending': () => { ui.favTab = 'pending'; setPage('favs'); },
+  'go-place': (el, ev) => { ev.preventDefault(); goPlace(el.dataset.id); },
+  'toggle-visited': el => { const p = db.places.find(x => x.id === el.dataset.id); if (!p) return; p.visited = !p.visited; p.updatedAt = Date.now(); save(); render(); toast(p.visited ? '已标记为已去' : '已改回未去'); },
+  'go-search': () => goSearch(),
+  'go-pick': el => goSearch(el.dataset.v),
+  'clear-dest': () => { ui.dest = null; ui.destStations = null; render(); },
+  'dest-stations': () => loadDestStations(),
+  'dest-to-fav': () => { const d = ui.dest; const tmp = { name: d.name || '', category: '其他', city: '', address: d.address || '', lat: d.lat, lng: d.lng, mapUrl: d.mapUrl || '', note: '', priority: 'want', visited: false, hours: '', cost: null, stayMin: null, locSource: d.source };
+    placeForm(null, tmp); },
+  'fav-tab': el => { ui.favTab = el.dataset.v; render(); },
+  'fav-cat': el => { ui.favCat = el.dataset.v; render(); },
+  'fav-pri': el => { ui.favPri = el.dataset.v; render(); },
+  'fav-status': el => { ui.favStatus = el.dataset.v; render(); },
+  'place-new': () => placeForm(null),
+  'place-edit': el => placeForm(db.places.find(x => x.id === el.dataset.id)),
+  'batch-add': () => batchAdd(),
+  'csv-import': () => csvImport(),
+  'load-sample': () => loadSample(),
+  'exp-new': () => expenseForm(null),
+  'exp-edit': el => expenseForm(db.expenses.find(x => x.id === el.dataset.id)),
+  'exp-export': () => exportExpenses(),
+  'rate-edit': () => rateEdit(),
+  'trip-settings': () => tripSettings(),
+  settings: () => settingsSheet()
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = actions[el.dataset.act]; if (fn) fn(el, e);
+});
+
+/* ---------- 启动 ---------- */
+function boot() {
+  $('#app').innerHTML = `<header class="top"><div class="top-row"><h1 id="title">附近</h1><button class="icon-btn" data-act="settings" aria-label="数据与设置">${ICON.gear}</button></div></header>
+    <main><div id="banner" class="banner" hidden></div><div id="page" style="display:grid;gap:14px;min-width:0"></div></main>
+    <nav class="tabbar" aria-label="主要页面"><div class="tabbar-in">
+      ${[['nearby', '附近'], ['go', '去哪里'], ['favs', '我的收藏'], ['ledger', '旅行账本']].map(([k, n]) => `<button class="tab" data-act="tab" data-v="${k}">${ICON[k === 'favs' ? 'fav' : k]}<span>${n}</span></button>`).join('')}
+    </div></nav>`;
+  render();
+  setInterval(() => { $$('[data-ago]').forEach(el => { el.textContent = agoText(+el.dataset.ago); }); }, 30000);
+}
+boot();
+})();
+</script>
+</body>
+</html>
